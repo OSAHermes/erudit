@@ -1,0 +1,10 @@
+# 个人知识库
+.env
+__pycache__/
+*.pyc
+*.pyo
+venv/
+.venv/
+data/
+articles/
+*.db

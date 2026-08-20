@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  knowledge-base:
+    build: .
+    container_name: knowledge-base
+    ports:
+      - "8080:8000"
+    volumes:
+      - ./data:/data
+      - ./articles:/articles
+    environment:
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin123}
+      - JWT_SECRET=${JWT_SECRET:-change-me}
+      - KB_DB_PATH=/data/knowledge_base.db
+      - KB_ARTICLES_DIR=/articles
+    restart: unless-stopped
+    networks:
+      - kb-network
+
+  # 可选：Nginx 反向代理
+  nginx:
+    image: nginx:alpine
+    container_name: kb-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./certs:/certs:ro
+    depends_on:
+      - knowledge-base
+    restart: unless-stopped
+    networks:
+      - kb-network
+
+networks:
+  kb-network:
+    driver: bridge
