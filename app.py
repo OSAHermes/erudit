@@ -455,7 +455,25 @@ def get_stats():
 
 # 备份目录
 BACKUP_DIR = os.environ.get("KB_BACKUP_DIR", "/data/backups")
+UPLOAD_DIR = os.environ.get("KB_UPLOAD_DIR", "/data/uploads")
 os.makedirs(BACKUP_DIR, exist_ok=True)
+os.makedirs(UPLOAD_DIR, exist_ok=True)
+
+# 备份保留策略
+BACKUP_RETENTION_DAYS = int(os.environ.get("KB_BACKUP_RETENTION_DAYS", "7"))
+
+def clean_old_backups():
+    """清理超过保留期的备份文件"""
+    cutoff = datetime.now() - timedelta(days=BACKUP_RETENTION_DAYS)
+    deleted = 0
+    if os.path.exists(BACKUP_DIR):
+        for f in os.listdir(BACKUP_DIR):
+            if f.endswith('.tar.gz'):
+                filepath = os.path.join(BACKUP_DIR, f)
+                if datetime.fromtimestamp(os.path.getmtime(filepath)) < cutoff:
+                    os.remove(filepath)
+                    deleted += 1
+    return deleted
 
 def get_backup_files():
     """获取所有备份文件列表"""
@@ -519,12 +537,16 @@ def create_backup_endpoint(credentials: HTTPAuthorizationCredentials = Depends(H
     try:
         backup_filename = create_backup()
         backup_path = os.path.join(BACKUP_DIR, backup_filename)
-        
+
+        # 清理旧备份
+        deleted = clean_old_backups()
+
         return {
             "message": "备份创建成功",
             "filename": backup_filename,
             "download_url": f"/api/backups/{backup_filename}",
-            "created_at": datetime.now().isoformat()
+            "created_at": datetime.now().isoformat(),
+            "deleted_old_backups": deleted
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"备份创建失败: {str(e)}")
@@ -580,7 +602,121 @@ def delete_backup(filename: str, credentials: HTTPAuthorizationCredentials = Dep
     os.remove(backup_path)
     return {"message": "备份删除成功"}
 
-@app.get("/api/search")
+@app.post("/api/backup/cleanup")
+def cleanup_backups_endpoint(credentials: HTTPAuthorizationCredentials = Depends(HTTPBearer())):
+    """手动清理旧备份"""
+    token_record = validate_token(credentials.credentials)
+    if not token_record:
+        raise HTTPException(status_code=401, detail="未授权")
+    
+    deleted = clean_old_backups()
+    return {"message": f"清理完成，删除了 {deleted} 个旧备份"}
+
+@app.get("/api/uploads/{filename}")
+def get_upload(filename: str):
+    """获取上传的图片"""
+    if '..' in filename or filename.startswith('/'):
+        raise HTTPException(status_code=400, detail="非法文件名")
+    
+    filepath = os.path.join(UPLOAD_DIR, filename)
+    if not os.path.exists(filepath):
+        raise HTTPException(status_code=404, detail="文件不存在")
+    
+    return FileResponse(filepath)
+
+@app.get("/api/rss")
+def get_rss():
+    """获取公开文章的 RSS 订阅"""
+    conn = get_db()
+    articles = conn.execute(
+        "SELECT * FROM articles WHERE is_public = 1 ORDER BY created_at DESC"
+    ).fetchall()
+    conn.close()
+    
+    items = ""
+    for a in articles[:20]:
+        items += f"""
+    <item>
+        <title>{a['title']}</title>
+        <link>http://localhost:8080/api/articles/{a['slug']}</link>
+        <description>{a['content'][:200]}...</description>
+        <pubDate>{a['created_at']}</pubDate>
+    </item>"""
+    
+    rss = f"""<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+    <channel>
+        <title>Erudit 知识库</title>
+        <link>http://localhost:8080</link>
+        <description>个人知识管理系统的公开文章</description>
+        <language>zh-cn</language>
+        {items}
+    </channel>
+</rss>"""
+    return Response(content=rss, media_type="application/rss+xml")
+
+@app.get("/api/metrics")
+def get_metrics():
+    """系统监控指标"""
+    conn = get_db()
+    total_articles = conn.execute("SELECT COUNT(*) FROM articles").fetchone()[0]
+    total_categories = conn.execute("SELECT COUNT(*) FROM categories").fetchone()[0]
+    total_tokens = conn.execute("SELECT COUNT(*) FROM tokens").fetchone()[0]
+    conn.close()
+    
+    backup_size = 0
+    if os.path.exists(BACKUP_DIR):
+        for f in os.listdir(BACKUP_DIR):
+            if f.endswith('.tar.gz'):
+                backup_size += os.path.getsize(os.path.join(BACKUP_DIR, f))
+    
+    return {
+        "articles": total_articles,
+        "categories": total_categories,
+        "active_tokens": total_tokens,
+        "backup_size_bytes": backup_size,
+        "backup_size_readable": f"{backup_size / 1024:.1f} KB" if backup_size else "0 KB",
+        "version": "2.0.0"
+    }
+
+@app.get("/api/exports/{slug}")
+def export_article(slug: str, format: str = "markdown", credentials: HTTPAuthorizationCredentials = Depends(HTTPBearer())):
+    """导出文章为 Markdown 或 HTML"""
+    token_record = validate_token(credentials.credentials)
+    if not token_record:
+        raise HTTPException(status_code=401, detail="未授权")
+    
+    conn = get_db()
+    article = conn.execute("SELECT * FROM articles WHERE slug = ?", (slug,)).fetchone()
+    conn.close()
+    
+    if not article:
+        raise HTTPException(status_code=404, detail="文章不存在")
+    
+    if format == "markdown":
+        content = article["content"]
+        filename = f"{slug}.md"
+        media_type = "text/markdown"
+    elif format == "html":
+        try:
+            import markdown as md
+            content = md.markdown(article["content"])
+            content = f"""<!DOCTYPE html><html><head><title>{article['title']}</title></head>
+<body><h1>{article['title']}</h1>{content}</body></html>"""
+        except ImportError:
+            content = article["content"]
+        filename = f"{slug}.html"
+        media_type = "text/html"
+    else:
+        raise HTTPException(status_code=400, detail="不支持的格式")
+    
+    return Response(
+        content=content,
+        media_type=media_type,
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )
+
+@app.exception_handler(RateLimitExceeded)
 def search_articles(keyword: str = "", credentials: HTTPAuthorizationCredentials = Depends(HTTPBearer())):
     """全文搜索文章"""
     token_record = validate_token(credentials.credentials)
@@ -616,6 +752,15 @@ def search_articles(keyword: str = "", credentials: HTTPAuthorizationCredentials
 
     conn.close()
     return {"articles": articles, "total": len(articles), "keyword": keyword}
+
+@app.get("/")
+def serve_ui():
+    """提供 Web UI"""
+    ui_path = os.path.join(os.path.dirname(__file__), "static", "index.html")
+    if os.path.exists(ui_path):
+        with open(ui_path, "r") as f:
+            return Response(content=f.read(), media_type="text/html")
+    return Response(content="<h1>Erudit - 知识管理系统</h1><p>Web UI 暂未部署</p>", media_type="text/html")
 
 @app.exception_handler(RateLimitExceeded)
 async def rate_limit_handler(request, exc):

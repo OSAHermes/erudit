@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Erudit - 知识管理系统</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .header { background: #2c3e50; color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+        .header h1 { font-size: 24px; }
+        .login-form { background: white; padding: 30px; border-radius: 8px; max-width: 400px; margin: 50px auto; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .login-form input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 4px; }
+        .login-form button { width: 100%; padding: 12px; background: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; }
+        .login-form button:hover { background: #2980b9; }
+        .toolbar { background: white; padding: 15px; border-radius: 8px; margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap; }
+        .toolbar button { padding: 8px 16px; background: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        .toolbar button:hover { background: #2980b9; }
+        .toolbar button.secondary { background: #95a5a6; }
+        .content { display: grid; grid-template-columns: 1fr 2fr; gap: 20px; }
+        .sidebar { background: white; padding: 20px; border-radius: 8px; height: fit-content; }
+        .main { background: white; padding: 20px; border-radius: 8px; }
+        .article-list { list-style: none; }
+        .article-list li { padding: 10px; border-bottom: 1px solid #eee; cursor: pointer; }
+        .article-list li:hover { background: #f8f9fa; }
+        .article-list li.active { background: #e3f2fd; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+        .form-group input, .form-group textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; }
+        .form-group textarea { min-height: 200px; }
+        .stats { background: #ecf0f1; padding: 15px; border-radius: 4px; margin-bottom: 20px; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="loginSection" class="login-form">
+            <h2 style="text-align:center;margin-bottom:20px;">Erudit 登录</h2>
+            <input type="password" id="password" placeholder="输入密码">
+            <button onclick="login()">登录</button>
+        </div>
+        <div id="mainSection" class="hidden">
+            <div class="header"><h1>📚 Erudit 知识管理系统</h1></div>
+            <div class="toolbar">
+                <button onclick="showCreate()">+ 新建文章</button>
+                <button onclick="showBackup()">💾 备份</button>
+                <button onclick="showRSS()">📡 RSS</button>
+                <button class="secondary" onclick="logout()">退出</button>
+            </div>
+            <div class="content">
+                <div class="sidebar">
+                    <div class="stats">
+                        <div><strong>统计</strong></div>
+                        <div>文章: <span id="statArticles">0</span></div>
+                        <div>分类: <span id="statCategories">0</span></div>
+                    </div>
+                    <h3>文章列表</h3>
+                    <ul class="article-list" id="articleList"></ul>
+                </div>
+                <div class="main" id="editor"><h2>选择文章或创建新文章</h2></div>
+            </div>
+        </div>
+    </div>
+    <script>
+        let token = '', articles = [];
+        async function login() {
+            const password = document.getElementById('password').value;
+            const resp = await fetch(`/api/auth/login?password=${encodeURIComponent(password)}`);
+            const data = await resp.json();
+            if (data.token) {
+                token = data.token;
+                localStorage.setItem('erudit_token', token);
+                showMain();
+            } else { alert('密码错误'); }
+        }
+        function showMain() {
+            document.getElementById('loginSection').classList.add('hidden');
+            document.getElementById('mainSection').classList.remove('hidden');
+            loadArticles();
+        }
+        async function loadArticles() {
+            const resp = await fetch('/api/articles', { headers: { 'Authorization': `Bearer ${token}` } });
+            const data = await resp.json();
+            articles = data.articles || [];
+            renderList();
+        }
+        function renderList() {
+            document.getElementById('articleList').innerHTML = articles.map(a =>
+                `<li onclick="loadArticle('${a.slug}')">${a.title}</li>`
+            ).join('');
+        }
+        async function loadArticle(slug) {
+            const resp = await fetch(`/api/articles/${slug}`, { headers: { 'Authorization': `Bearer ${token}` } });
+            const article = await resp.json();
+            document.getElementById('editor').innerHTML = `
+                <h2>编辑: ${article.title}</h2>
+                <div class="form-group"><label>标题</label><input type="text" id="editTitle" value="${article.title}"></div>
+                <div class="form-group"><label>内容</label><textarea id="editContent">${article.content}</textarea></div>
+                <button onclick="saveArticle('${slug}')">保存</button>
+                <button onclick="exportArticle('${slug}')" style="margin-left:10px;">导出</button>
+            `;
+        }
+        async function saveArticle(slug) {
+            await fetch(`/api/articles/${slug}`, {
+                method: 'PUT',
+                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ title: document.getElementById('editTitle').value, content: document.getElementById('editContent').value })
+            });
+            alert('保存成功');
+        }
+        function exportArticle(slug) { window.open(`/api/exports/${slug}?format=markdown`); }
+        function showBackup() {
+            if (confirm('创建备份？')) {
+                fetch('/api/backup', { method: 'POST', headers: { 'Authorization': `Bearer ${token}` } })
+                    .then(r => r.json()).then(d => alert('备份: ' + d.filename));
+            }
+        }
+        function showRSS() { window.open('/api/rss'); }
+        function logout() {
+            token = ''; localStorage.removeItem('erudit_token');
+            document.getElementById('loginSection').classList.remove('hidden');
+            document.getElementById('mainSection').classList.add('hidden');
+        }
+        const savedToken = localStorage.getItem('erudit_token');
+        if (savedToken) { token = savedToken; showMain(); }
+    </script>
+</body>
+</html>
