@@ -20,6 +20,8 @@ import secrets
 import tarfile
 import shutil
 import io
+import bcrypt
+from datetime import datetime, timedelta
 
 app = FastAPI(title="Erudit - 个人知识管理系统", version="2.0.0")
 app.add_middleware(
@@ -34,7 +36,7 @@ app.add_middleware(
 DB_PATH = os.environ.get("KB_DB_PATH", "/data/knowledge_base.db")
 ARTICLES_DIR = os.environ.get("KB_ARTICLES_DIR", "/data/articles")
 JWT_SECRET = os.environ.get("JWT_SECRET", secrets.token_hex(32))
-ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "admin123")
+ADMIN_PASSWORD_HASH = os.environ.get("ADMIN_PASSWORD_HASH", "")
 
 os.makedirs(ARTICLES_DIR, exist_ok=True)
 
@@ -146,6 +148,15 @@ def get_db():
     conn.row_factory = sqlite3.Row
     return conn
 
+def validate_token(token: str):
+    """验证 token 是否存在且未过期，返回 token 记录或 None"""
+    conn = get_db()
+    conn.execute("DELETE FROM tokens WHERE expires_at < ?", (datetime.utcnow().isoformat(),))
+    conn.commit()
+    record = conn.execute("SELECT * FROM tokens WHERE token = ?", (token,)).fetchone()
+    conn.close()
+    return record
+
 def generate_slug(title: str) -> str:
     return hashlib.md5(title.encode()).hexdigest()[:8]
 
@@ -167,7 +178,10 @@ def decrypt_content(encrypted: str, key: str) -> str:
     return bytes(decrypted).decode()
 
 def verify_password(password: str) -> bool:
-    return password == ADMIN_PASSWORD
+    import bcrypt
+    if not ADMIN_PASSWORD_HASH:
+        return False
+    return bcrypt.checkpw(password.encode(), ADMIN_PASSWORD_HASH.encode())
 
 # API 端点
 
@@ -180,9 +194,10 @@ def login(password: str):
     if not verify_password(password):
         raise HTTPException(status_code=401, detail="密码错误")
     token = secrets.token_urlsafe(32)
+    expires_at = (datetime.utcnow() + timedelta(hours=24)).isoformat()
     conn = get_db()
     conn.execute("DELETE FROM tokens WHERE username = ?", ("admin",))
-    conn.execute("INSERT INTO tokens (token, username) VALUES (?, ?)", (token, "admin"))
+    conn.execute("INSERT INTO tokens (token, username, expires_at) VALUES (?, ?, ?)", (token, "admin", expires_at))
     conn.commit()
     conn.close()
     return {"token": token, "username": "admin"}
@@ -197,10 +212,8 @@ def get_categories():
 @app.post("/api/categories")
 def create_category(category: CategoryCreate, credentials: HTTPAuthorizationCredentials = Depends(HTTPBearer())):
     # 验证 token
-    conn = get_db()
-    token_record = conn.execute("SELECT * FROM tokens WHERE token = ?", (credentials.credentials,)).fetchone()
+    token_record = validate_token(credentials.credentials)
     if not token_record:
-        conn.close()
         raise HTTPException(status_code=401, detail="未授权")
     conn.close()
     
@@ -214,10 +227,8 @@ def create_category(category: CategoryCreate, credentials: HTTPAuthorizationCred
 
 @app.delete("/api/categories/{category_id}")
 def delete_category(category_id: int, credentials: HTTPAuthorizationCredentials = Depends(HTTPBearer())):
-    conn = get_db()
-    token_record = conn.execute("SELECT * FROM tokens WHERE token = ?", (credentials.credentials,)).fetchone()
+    token_record = validate_token(credentials.credentials)
     if not token_record:
-        conn.close()
         raise HTTPException(status_code=401, detail="未授权")
     conn.execute("DELETE FROM categories WHERE id = ?", (category_id,))
     conn.commit()
@@ -233,8 +244,8 @@ def get_articles(
     page_size: int = 20,
     credentials: HTTPAuthorizationCredentials = Depends(HTTPBearer())
 ):
+    token_record = validate_token(credentials.credentials)
     conn = get_db()
-    token_record = conn.execute("SELECT * FROM tokens WHERE token = ?", (credentials.credentials,)).fetchone()
 
     # 基础查询
     query = "SELECT * FROM articles WHERE 1=1"
@@ -279,8 +290,8 @@ def get_articles(
 
 @app.get("/api/articles/{slug}")
 def get_article(slug: str, password: Optional[str] = None, credentials: HTTPAuthorizationCredentials = Depends(HTTPBearer())):
+    token_record = validate_token(credentials.credentials)
     conn = get_db()
-    token_record = conn.execute("SELECT * FROM tokens WHERE token = ?", (credentials.credentials,)).fetchone()
     
     article = conn.execute("SELECT * FROM articles WHERE slug = ?", (slug,)).fetchone()
     if not article:
@@ -302,10 +313,8 @@ def get_article(slug: str, password: Optional[str] = None, credentials: HTTPAuth
 
 @app.post("/api/articles")
 def create_article(article: ArticleCreate, credentials: HTTPAuthorizationCredentials = Depends(HTTPBearer())):
-    conn = get_db()
-    token_record = conn.execute("SELECT * FROM tokens WHERE token = ?", (credentials.credentials,)).fetchone()
+    token_record = validate_token(credentials.credentials)
     if not token_record:
-        conn.close()
         raise HTTPException(status_code=401, detail="未授权")
     
     slug = generate_slug(article.title)
@@ -329,10 +338,8 @@ def create_article(article: ArticleCreate, credentials: HTTPAuthorizationCredent
 
 @app.put("/api/articles/{slug}")
 def update_article(slug: str, article: ArticleUpdate, credentials: HTTPAuthorizationCredentials = Depends(HTTPBearer())):
-    conn = get_db()
-    token_record = conn.execute("SELECT * FROM tokens WHERE token = ?", (credentials.credentials,)).fetchone()
+    token_record = validate_token(credentials.credentials)
     if not token_record:
-        conn.close()
         raise HTTPException(status_code=401, detail="未授权")
     
     existing = conn.execute("SELECT * FROM articles WHERE slug = ?", (slug,)).fetchone()
@@ -364,10 +371,8 @@ def update_article(slug: str, article: ArticleUpdate, credentials: HTTPAuthoriza
 
 @app.delete("/api/articles/{slug}")
 def delete_article(slug: str, credentials: HTTPAuthorizationCredentials = Depends(HTTPBearer())):
-    conn = get_db()
-    token_record = conn.execute("SELECT * FROM tokens WHERE token = ?", (credentials.credentials,)).fetchone()
+    token_record = validate_token(credentials.credentials)
     if not token_record:
-        conn.close()
         raise HTTPException(status_code=401, detail="未授权")
     
     conn.execute("DELETE FROM articles WHERE slug = ?", (slug,))
@@ -462,10 +467,8 @@ def create_backup():
 @app.post("/api/backup")
 def create_backup_endpoint(credentials: HTTPAuthorizationCredentials = Depends(HTTPBearer())):
     """创建备份并返回下载链接"""
-    conn = get_db()
-    token_record = conn.execute("SELECT * FROM tokens WHERE token = ?", (credentials.credentials,)).fetchone()
+    token_record = validate_token(credentials.credentials)
     if not token_record:
-        conn.close()
         raise HTTPException(status_code=401, detail="未授权")
     conn.close()
     
@@ -485,10 +488,8 @@ def create_backup_endpoint(credentials: HTTPAuthorizationCredentials = Depends(H
 @app.get("/api/backups")
 def list_backups(credentials: HTTPAuthorizationCredentials = Depends(HTTPBearer())):
     """列出所有可用备份"""
-    conn = get_db()
-    token_record = conn.execute("SELECT * FROM tokens WHERE token = ?", (credentials.credentials,)).fetchone()
+    token_record = validate_token(credentials.credentials)
     if not token_record:
-        conn.close()
         raise HTTPException(status_code=401, detail="未授权")
     conn.close()
     
@@ -498,10 +499,8 @@ def list_backups(credentials: HTTPAuthorizationCredentials = Depends(HTTPBearer(
 @app.get("/api/backups/{filename}")
 def download_backup(filename: str, credentials: HTTPAuthorizationCredentials = Depends(HTTPBearer())):
     """下载指定备份文件"""
-    conn = get_db()
-    token_record = conn.execute("SELECT * FROM tokens WHERE token = ?", (credentials.credentials,)).fetchone()
+    token_record = validate_token(credentials.credentials)
     if not token_record:
-        conn.close()
         raise HTTPException(status_code=401, detail="未授权")
     conn.close()
     
@@ -521,10 +520,8 @@ def download_backup(filename: str, credentials: HTTPAuthorizationCredentials = D
 @app.delete("/api/backups/{filename}")
 def delete_backup(filename: str, credentials: HTTPAuthorizationCredentials = Depends(HTTPBearer())):
     """删除指定备份文件"""
-    conn = get_db()
-    token_record = conn.execute("SELECT * FROM tokens WHERE token = ?", (credentials.credentials,)).fetchone()
+    token_record = validate_token(credentials.credentials)
     if not token_record:
-        conn.close()
         raise HTTPException(status_code=401, detail="未授权")
     conn.close()
 
@@ -542,8 +539,8 @@ def delete_backup(filename: str, credentials: HTTPAuthorizationCredentials = Dep
 @app.get("/api/search")
 def search_articles(keyword: str = "", credentials: HTTPAuthorizationCredentials = Depends(HTTPBearer())):
     """全文搜索文章"""
+    token_record = validate_token(credentials.credentials)
     conn = get_db()
-    token_record = conn.execute("SELECT * FROM tokens WHERE token = ?", (credentials.credentials,)).fetchone()
 
     if not keyword.strip():
         conn.close()
