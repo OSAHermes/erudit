@@ -7,6 +7,7 @@ services:
     volumes:
       - kb_data:/data
       - kb_articles:/articles
+      - kb_backups:/data/backups
     environment:
       - ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin123}
       - JWT_SECRET=${JWT_SECRET:-change-me}
@@ -34,6 +35,7 @@ services:
 volumes:
   kb_data:
   kb_articles:
+  kb_backups:
 
 networks:
   kb-network:

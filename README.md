@@ -5,7 +5,7 @@
 - 文章加密
 - 公开/私密文章
 - Docker 部署
-- GitHub 同步
+- GitHub 自动同步
 
 ## 功能特性
 
@@ -24,6 +24,12 @@
 - 管理员登录
 - API Token 认证
 - JWT 支持
+
+### 4. GitHub 同步
+- 自动推送文章到 GitHub
+- 增量同步：仅推送变更的文章
+- 加密保护：加密文章仅同步元数据
+- 备份分支：每次同步前自动备份
 
 ## 快速开始
 
@@ -91,7 +97,7 @@ GET /api/articles/{slug}?password=xxx
 
 # 创建文章
 POST /api/articles
-Authorization: Bearer {token}
+Authorization: Bearer ***
 Content-Type: application/json
 
 {
@@ -105,11 +111,11 @@ Content-Type: application/json
 
 # 更新文章
 PUT /api/articles/{slug}
-Authorization: Bearer {token}
+Authorization: Bearer ***
 
 # 删除文章
 DELETE /api/articles/{slug}
-Authorization: Bearer {token}
+Authorization: Bearer ***
 ```
 
 ### 分类
@@ -120,7 +126,7 @@ GET /api/categories
 
 # 创建分类
 POST /api/categories
-Authorization: Bearer {token}
+Authorization: Bearer ***
 
 {
   "name": "Docker",
@@ -129,7 +135,7 @@ Authorization: Bearer {token}
 
 # 删除分类
 DELETE /api/categories/{id}
-Authorization: Bearer {token}
+Authorization: Bearer ***
 ```
 
 ### 标签
@@ -146,7 +152,7 @@ GET /api/articles?tag=docker
 
 ```bash
 GET /api/stats
-Authorization: Bearer {token}
+Authorization: Bearer ***
 ```
 
 ## 加密功能
@@ -155,7 +161,7 @@ Authorization: Bearer {token}
 
 ```bash
 POST /api/articles
-Authorization: Bearer {token}
+Authorization: Bearer ***
 
 {
   "title": "加密文章",
@@ -173,39 +179,77 @@ GET /api/articles/{slug}?password=my-secret-key
 
 # 或使用 API Token
 GET /api/articles/{slug}
-Authorization: Bearer {token}
+Authorization: Bearer ***
 ```
 
-## GitHub 同步
+## GitHub 自动同步
 
-### 自动推送文章到 GitHub
+### 配置 GitHub Token
 
-系统支持将文章同步到 GitHub 仓库：
+1. 在 GitHub 创建 Personal Access Token：
+   - Settings → Developer settings → Personal access tokens
+   - 选择 `repo` 权限
+   - 生成并复制 token
 
+2. 配置环境变量：
 ```bash
-# 配置 GitHub
-export GITHUB_TOKEN=your_token
+export GITHUB_TOKEN=ghp_xxxxxxxxxxxx
 export GITHUB_REPO=trencps/knowledge-base
 export GITHUB_BRANCH=main
-
-# 同步
-python sync.py --push
 ```
 
-### 目录结构
+### 手动同步
+
+```bash
+# 基本同步
+python sync.py
+
+# 查看可用选项
+python sync.py --help
+
+# 模拟运行（不提交）
+python sync.py --dry-run
+
+# 详细日志
+python sync.py --log-level DEBUG
+
+# 不创建备份分支
+python sync.py --no-backup
+```
+
+### GitHub Actions 自动同步
+
+仓库已配置 GitHub Actions，支持以下触发方式：
+
+1. **推送触发**：推送到 main 分支时自动执行
+2. **定时触发**：每天 UTC 00:00 自动执行
+3. **手动触发**：在 Actions 页面点击 "Run workflow"
+
+### 同步后的仓库结构
 
 ```
 knowledge-base/
-├── app.py              # 主应用
-├── sync.py             # GitHub 同步脚本
-├── requirements.txt    # Python 依赖
-├── docker-compose.yml  # Docker 配置
-├── .env.example        # 环境变量模板
-├── articles/           # 文章存储
-│   ├── public/         # 公开文章
-│   └── private/        # 私密文章
-└── data/               # 数据库
+├── README.md               # 自动生成，包含文章索引
+├── articles/
+│   ├── public/             # 公开文章
+│   │   ├── xxx.md
+│   │   └── yyy.md
+│   ├── private/            # 私密文章
+│   └── encrypted/          # 加密文章（仅元数据）
+├── categories/
+│   ├── index.md            # 分类索引
+│   └── xxx.md              # 各分类详情
+├── tags/
+│   └── index.md            # 标签索引
+└── _backup/                # 备份目录
 ```
+
+### 同步特性
+
+- **增量同步**：仅推送变更的文章
+- **加密保护**：加密文章不推送实际内容，仅同步标题/标签等元数据
+- **自动备份**：每次同步前创建备份分支（可禁用）
+- **详细日志**：支持 DEBUG/INFO/WARNING/ERROR 级别
 
 ## 环境变量
 
@@ -215,6 +259,9 @@ knowledge-base/
 | JWT_SECRET | JWT 密钥 | 自动生成 |
 | KB_DB_PATH | 数据库路径 | /data/knowledge_base.db |
 | KB_ARTICLES_DIR | 文章目录 | /data/articles |
+| GITHUB_TOKEN | GitHub Token | - |
+| GITHUB_REPO | GitHub 仓库 | - |
+| GITHUB_BRANCH | 目标分支 | main |
 
 ## 安全建议
 
@@ -241,8 +288,13 @@ knowledge-base/
 
 4. **定期备份**
    ```bash
-   docker exec -v knowledge-base:/data backup
+   docker exec knowledge-base backup
    ```
+
+5. **GitHub Token 安全**
+   - 不要将 token 提交到代码仓库
+   - 使用 GitHub Secrets 存储（CI/CD 环境）
+   - 定期轮换 token
 
 ## 许可证
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """个人知识库系统 - 支持分类、标签、加密文章"""
 
-from fastapi import FastAPI, HTTPException, Depends, UploadFile, File
+from fastapi import FastAPI, HTTPException, Depends, UploadFile, File, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel, Field
@@ -14,6 +14,9 @@ import base64
 import sqlite3
 from pathlib import Path
 import secrets
+import tarfile
+import shutil
+import io
 
 app = FastAPI(title="个人知识库", version="1.0.0")
 app.add_middleware(
@@ -68,6 +71,39 @@ def init_db():
             expires_at TIMESTAMP,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
+    ''')
+    # FTS5 虚拟表 - 用于全文搜索
+    c.execute('''
+        CREATE VIRTUAL TABLE IF NOT EXISTS articles_fts USING fts5(
+            title,
+            content,
+            content='articles',
+            content_rowid='rowid'
+        )
+    ''')
+    # 创建触发器以保持 FTS5 同步
+    c.execute('''
+        CREATE TRIGGER IF NOT EXISTS articles_ai AFTER INSERT ON articles
+        BEGIN
+            INSERT INTO articles_fts(rowid, title, content)
+            VALUES (new.rowid, new.title, new.content);
+        END
+    ''')
+    c.execute('''
+        CREATE TRIGGER IF NOT EXISTS articles_ad AFTER DELETE ON articles
+        BEGIN
+            INSERT INTO articles_fts(articles_fts, rowid, title, content)
+            VALUES ('delete', old.rowid, old.title, old.content);
+        END
+    ''')
+    c.execute('''
+        CREATE TRIGGER IF NOT EXISTS articles_au AFTER UPDATE ON articles
+        BEGIN
+            INSERT INTO articles_fts(articles_fts, rowid, title, content)
+            VALUES ('delete', old.rowid, old.title, old.content);
+            INSERT INTO articles_fts(rowid, title, content)
+            VALUES (new.rowid, new.title, new.content);
+        END
     ''')
     conn.commit()
     conn.close()
@@ -186,29 +222,57 @@ def delete_category(category_id: int, credentials: HTTPAuthorizationCredentials 
     return {"message": "分类删除成功"}
 
 @app.get("/api/articles")
-def get_articles(category_id: Optional[int] = None, tag: Optional[str] = None, public_only: bool = True, credentials: HTTPAuthorizationCredentials = Depends(HTTPBearer())):
+def get_articles(
+    category_id: Optional[int] = None,
+    tag: Optional[str] = None,
+    public_only: bool = True,
+    page: int = 1,
+    page_size: int = 20,
+    credentials: HTTPAuthorizationCredentials = Depends(HTTPBearer())
+):
     conn = get_db()
     token_record = conn.execute("SELECT * FROM tokens WHERE token = ?", (credentials.credentials,)).fetchone()
-    
+
+    # 基础查询
     query = "SELECT * FROM articles WHERE 1=1"
+    count_query = "SELECT COUNT(*) FROM articles WHERE 1=1"
     params = []
-    
+    count_params = []
+
     if public_only and not token_record:
         query += " AND is_public = 1 AND (is_encrypted = 0 OR encryption_key IS NULL)"
-    
+        count_query += " AND is_public = 1 AND (is_encrypted = 0 OR encryption_key IS NULL)"
+
     if category_id:
         query += " AND category_id = ?"
+        count_query += " AND category_id = ?"
         params.append(category_id)
-    
+        count_params.append(category_id)
+
     if tag:
         query += " AND tags LIKE ?"
+        count_query += " AND tags LIKE ?"
         params.append(f"%{tag}%")
-    
+        count_params.append(f"%{tag}%")
+
     query += " ORDER BY created_at DESC"
-    
+
+    # 分页查询
+    offset = (page - 1) * page_size
+    query += f" LIMIT {page_size} OFFSET {offset}"
+
+    total = conn.execute(count_query, count_params).fetchone()[0]
     articles = conn.execute(query, params).fetchall()
     conn.close()
-    return [dict(a) for a in articles]
+
+    return {
+        "articles": [dict(a) for a in articles],
+        "total": total,
+        "page": page,
+        "page_size": page_size,
+        "total_pages": (total + page_size - 1) // page_size if page_size > 0 else 0,
+        "has_next": page < (total + page_size - 1) // page_size if page_size > 0 else False
+    }
 
 @app.get("/api/articles/{slug}")
 def get_article(slug: str, password: Optional[str] = None, credentials: HTTPAuthorizationCredentials = Depends(HTTPBearer())):
@@ -336,6 +400,178 @@ def get_stats():
         "encrypted_articles": encrypted,
         "categories": categories
     }
+
+# 备份目录
+BACKUP_DIR = os.environ.get("KB_BACKUP_DIR", "/data/backups")
+os.makedirs(BACKUP_DIR, exist_ok=True)
+
+def get_backup_files():
+    """获取所有备份文件列表"""
+    backups = []
+    if os.path.exists(BACKUP_DIR):
+        for f in os.listdir(BACKUP_DIR):
+            if f.endswith('.tar.gz'):
+                filepath = os.path.join(BACKUP_DIR, f)
+                stat = os.stat(filepath)
+                backups.append({
+                    "filename": f,
+                    "size": stat.st_size,
+                    "created_at": datetime.fromtimestamp(stat.st_mtime).isoformat(),
+                    "size_readable": f"{stat.st_size / 1024:.1f} KB"
+                })
+    # 按创建时间倒序排列
+    backups.sort(key=lambda x: x["created_at"], reverse=True)
+    return backups
+
+def create_backup():
+    """创建数据库和文件的备份"""
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    backup_filename = f"backup_{timestamp}.tar.gz"
+    backup_path = os.path.join(BACKUP_DIR, backup_filename)
+    
+    with tarfile.open(backup_path, "w:gz") as tar:
+        # 添加数据库
+        if os.path.exists(DB_PATH):
+            tar.add(DB_PATH, arcname=os.path.basename(DB_PATH))
+        
+        # 添加文章目录
+        if os.path.exists(ARTICLES_DIR):
+            tar.add(ARTICLES_DIR, arcname="articles")
+        
+        # 添加 .env 文件（排除敏感信息）
+        env_path = os.path.join(os.path.dirname(DB_PATH), ".env")
+        if os.path.exists(env_path):
+            # 只备份非敏感环境变量
+            with open(env_path, 'r') as f:
+                env_content = f.read()
+            # 过滤掉密码和密钥
+            filtered_env = ""
+            for line in env_content.split('\n'):
+                if not any(k in line.lower() for k in ['password', 'secret', 'token', 'key']):
+                    filtered_env += line + '\n'
+            if filtered_env.strip():
+                env_info = tarfile.TarInfo(name=".env")
+                env_info.size = len(filtered_env.encode())
+                tar.addfile(env_info, io.StringIO(filtered_env))
+    
+    return backup_filename
+
+@app.post("/api/backup")
+def create_backup_endpoint(credentials: HTTPAuthorizationCredentials = Depends(HTTPBearer())):
+    """创建备份并返回下载链接"""
+    conn = get_db()
+    token_record = conn.execute("SELECT * FROM tokens WHERE token = ?", (credentials.credentials,)).fetchone()
+    if not token_record:
+        conn.close()
+        raise HTTPException(status_code=401, detail="未授权")
+    conn.close()
+    
+    try:
+        backup_filename = create_backup()
+        backup_path = os.path.join(BACKUP_DIR, backup_filename)
+        
+        return {
+            "message": "备份创建成功",
+            "filename": backup_filename,
+            "download_url": f"/api/backups/{backup_filename}",
+            "created_at": datetime.now().isoformat()
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"备份创建失败: {str(e)}")
+
+@app.get("/api/backups")
+def list_backups(credentials: HTTPAuthorizationCredentials = Depends(HTTPBearer())):
+    """列出所有可用备份"""
+    conn = get_db()
+    token_record = conn.execute("SELECT * FROM tokens WHERE token = ?", (credentials.credentials,)).fetchone()
+    if not token_record:
+        conn.close()
+        raise HTTPException(status_code=401, detail="未授权")
+    conn.close()
+    
+    backups = get_backup_files()
+    return {"backups": backups, "total": len(backups)}
+
+@app.get("/api/backups/{filename}")
+def download_backup(filename: str, credentials: HTTPAuthorizationCredentials = Depends(HTTPBearer())):
+    """下载指定备份文件"""
+    conn = get_db()
+    token_record = conn.execute("SELECT * FROM tokens WHERE token = ?", (credentials.credentials,)).fetchone()
+    if not token_record:
+        conn.close()
+        raise HTTPException(status_code=401, detail="未授权")
+    conn.close()
+    
+    backup_path = os.path.join(BACKUP_DIR, filename)
+    if not os.path.exists(backup_path):
+        raise HTTPException(status_code=404, detail="备份文件不存在")
+    
+    # 安全检查：防止路径遍历
+    if '..' in filename or filename.startswith('/'):
+        raise HTTPException(status_code=400, detail="非法文件名")
+    
+    return Response(
+        media_type="application/gzip",
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )
+
+@app.delete("/api/backups/{filename}")
+def delete_backup(filename: str, credentials: HTTPAuthorizationCredentials = Depends(HTTPBearer())):
+    """删除指定备份文件"""
+    conn = get_db()
+    token_record = conn.execute("SELECT * FROM tokens WHERE token = ?", (credentials.credentials,)).fetchone()
+    if not token_record:
+        conn.close()
+        raise HTTPException(status_code=401, detail="未授权")
+    conn.close()
+
+    backup_path = os.path.join(BACKUP_DIR, filename)
+    if not os.path.exists(backup_path):
+        raise HTTPException(status_code=404, detail="备份文件不存在")
+
+    # 安全检查
+    if '..' in filename or filename.startswith('/'):
+        raise HTTPException(status_code=400, detail="非法文件名")
+
+    os.remove(backup_path)
+    return {"message": "备份删除成功"}
+
+@app.get("/api/search")
+def search_articles(keyword: str = "", credentials: HTTPAuthorizationCredentials = Depends(HTTPBearer())):
+    """全文搜索文章"""
+    conn = get_db()
+    token_record = conn.execute("SELECT * FROM tokens WHERE token = ?", (credentials.credentials,)).fetchone()
+
+    if not keyword.strip():
+        conn.close()
+        return {"articles": [], "total": 0, "keyword": keyword}
+
+    # 使用 FTS5 搜索
+    search_query = f"{keyword}*"
+    results = conn.execute("""
+        SELECT a.*, rank
+        FROM articles_fts fts
+        JOIN articles a ON a.rowid = fts.rowid
+        WHERE articles_fts MATCH ?
+        ORDER BY rank
+        LIMIT 50
+    """, (search_query,)).fetchall()
+
+    # 构建搜索结果
+    articles = []
+    for row in results:
+        article = dict(row)
+        # 解密内容
+        if article["is_encrypted"] and article["encryption_key"]:
+            if token_record:
+                article["content"] = decrypt_content(article["content"], article["encryption_key"])
+            else:
+                # 跳过加密文章
+                continue
+        articles.append(article)
+
+    conn.close()
+    return {"articles": articles, "total": len(articles), "keyword": keyword}
 
 if __name__ == "__main__":
     import uvicorn

@@ -1,0 +1,112 @@
+name: GitHub Sync
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    # 每天 UTC 时间 00:00 执行同步
+    - cron: '0 0 * * *'
+  workflow_dispatch:  # 允许手动触发
+
+jobs:
+  sync:
+    name: Sync Knowledge Base to GitHub
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      
+      - name: Create database directory
+        run: |
+          mkdir -p /tmp/kb-data
+          # 创建示例数据库（如果没有真实数据库）
+          python -c "
+          import sqlite3
+          import os
+          
+          db_path = '/tmp/kb-data/knowledge_base.db'
+          if not os.path.exists(db_path):
+              conn = sqlite3.connect(db_path)
+              c = conn.cursor()
+              c.execute('''
+                  CREATE TABLE IF NOT EXISTS articles (
+                      id INTEGER PRIMARY KEY AUTOINCREMENT,
+                      title TEXT NOT NULL,
+                      slug TEXT UNIQUE NOT NULL,
+                      content TEXT NOT NULL,
+                      category_id INTEGER,
+                      tags TEXT,
+                      is_public INTEGER DEFAULT 1,
+                      is_encrypted INTEGER DEFAULT 0,
+                      encryption_key TEXT,
+                      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                  )
+              ''')
+              c.execute('''
+                  CREATE TABLE IF NOT EXISTS categories (
+                      id INTEGER PRIMARY KEY AUTOINCREMENT,
+                      name TEXT UNIQUE NOT NULL,
+                      slug TEXT UNIQUE NOT NULL,
+                      description TEXT,
+                      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                  )
+              ''')
+              c.execute('''
+                  CREATE TABLE IF NOT EXISTS tokens (
+                      id INTEGER PRIMARY KEY AUTOINCREMENT,
+                      token TEXT UNIQUE NOT NULL,
+                      username TEXT NOT NULL,
+                      expires_at TIMESTAMP,
+                      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                  )
+              ''')
+              conn.commit()
+              conn.close()
+              print('Created empty database')
+          else:
+              print('Database exists')
+          "
+      
+      - name: Run sync
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPO: ${{ github.repository }}
+          GITHUB_BRANCH: ${{ github.ref_name }}
+          KB_DB_PATH: /tmp/kb-data/knowledge_base.db
+        run: |
+          python sync.py --dry-run
+          echo "Sync completed successfully"
+      
+      - name: Check for changes
+        id: check-changes
+        run: |
+          if git diff --quiet; then
+            echo "No changes detected"
+            echo "changed=false" >> $GITHUB_OUTPUT
+          else
+            echo "Changes detected!"
+            echo "changed=true" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Commit and push changes
+        if: steps.check-changes.outputs.changed == 'true'
+        run: |
+          git config user.name "GitHub Action"
+          git config user.email "action@github.com"
+          git add .
+          git commit -m "Auto-sync: Update knowledge base articles [skip ci]"
+          git push
