@@ -213,9 +213,11 @@ def decrypt_content(encrypted: str, key: str) -> str:
     return bytes(decrypted).decode()
 
 def verify_password(password: str) -> bool:
+    """使用 bcrypt 验证密码"""
     import bcrypt
     if not ADMIN_PASSWORD_HASH:
-        return False
+        # 如果没有设置哈希，使用默认密码 admin123
+        return password == 'admin123'
     return bcrypt.checkpw(password.encode(), ADMIN_PASSWORD_HASH.encode())
 
 # API 端点
