@@ -1,10 +1,42 @@
-# 个人知识库
-.env
+# Python
 __pycache__/
-*.pyc
-*.pyo
+*.py[cod]
+*$py.class
+*.so
+.Python
 venv/
-.venv/
-data/
-articles/
-*.db
+env/
+ENV/
+*.egg-info/
+.pytest_cache/
+
+# Environment
+.env
+.env.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Data
+data/*.db
+data/*.db-journal
+data/backups/*
+!data/backups/.gitkeep
+
+# Articles
+articles/*
+!articles/.gitkeep
+
+# Git
+.git/
+.gitignore
+
+# Docker
+.docker/

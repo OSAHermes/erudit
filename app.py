@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""个人知识库系统 - 支持分类、标签、加密文章"""
+"""
+Erudit - 个人知识管理系统
+优雅的知识沉淀平台，支持分类、标签、加密文章
+"""
 
 from fastapi import FastAPI, HTTPException, Depends, UploadFile, File, Response
 from fastapi.middleware.cors import CORSMiddleware
@@ -18,7 +21,7 @@ import tarfile
 import shutil
 import io
 
-app = FastAPI(title="个人知识库", version="1.0.0")
+app = FastAPI(title="Erudit - 个人知识管理系统", version="2.0.0")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],

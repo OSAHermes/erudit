@@ -1,15 +1,15 @@
 #!/bin/bash
-# 个人知识库系统 - 快速开始
+# Erudit - 快速开始
 
 set -e
 
 # 克隆仓库
-if [ ! -d "knowledge-base" ]; then
-    echo "克隆仓库..."
-    git clone https://github.com/trencps/knowledge-base.git
-    cd knowledge-base
+if [ ! -d "erudit" ]; then
+    echo "克隆 Erudit 仓库..."
+    git clone https://github.com/trencps/erudit.git
+    cd erudit
 else
-    cd knowledge-base
+    cd erudit
     git pull
 fi
 
@@ -20,19 +20,20 @@ if [ ! -f .env ]; then
 fi
 
 # 启动服务
-echo "启动服务..."
+echo "启动 Erudit..."
 docker compose up -d
 
 echo ""
-echo "✅ 部署完成！"
+echo "======================================"
+echo "  Erudit 部署完成！"
+echo "======================================"
 echo ""
-echo "📍 访问地址："
-echo "   Web UI: http://$(hostname -I | awk '{print $1}'):8080"
-echo "   API 文档: http://$(hostname -I | awk '{print $1}'):8080/docs"
+echo "🌐 访问地址："
+echo "   API:    http://$(hostname -I | awk '{print $1}'):8080"
+echo "   文档:   http://$(hostname -I | awk '{print $1}'):8080/docs"
 echo ""
-echo "🔑 认证方式："
-echo "   POST /api/auth/login"
-echo "   {\"password\": \"your-password\"}"
+echo "🔑 认证："
+echo "   GET /api/auth/login?password=your_password"
 echo ""
-echo "📚 GitHub 仓库："
-echo "   https://github.com/trencps/knowledge-base"
+echo "📚 GitHub: https://github.com/trencps/erudit"
+echo "======================================"

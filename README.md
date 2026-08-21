@@ -1,55 +1,66 @@
-# 个人知识库系统
+# Erudit - 个人知识管理系统
 
-单用户知识管理平台，支持：
-- 分类和标签
-- 文章加密
-- 公开/私密文章
-- Docker 部署
-- GitHub 自动同步
+<div align="center">
 
-## 功能特性
+![Erudit](https://img.shields.io/badge/Erudit-v2.0-blue)
+![Python](https://img.shields.io/badge/Python-3.11+-green)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.109+-purple)
+![SQLite](https://img.shields.io/badge/SQLite-3-blue)
+![License](https://img.shields.io/badge/License-MIT-yellow)
 
-### 1. 文章管理
-- 创建、编辑、删除文章
-- Markdown 格式支持
-- 分类管理
-- 标签系统
+**优雅的知识沉淀平台**
 
-### 2. 隐私控制
-- 公开文章：任何人可访问
-- 加密文章：需要密码解密
-- 私密文章：仅登录用户可访问
+[文档](#api-文档) · [部署](#快速开始) · [GitHub](https://github.com/trencps/erudit)
 
-### 3. 用户认证
-- 管理员登录
-- API Token 认证
-- JWT 支持
+</div>
 
-### 4. GitHub 同步
-- 自动推送文章到 GitHub
-- 增量同步：仅推送变更的文章
-- 加密保护：加密文章仅同步元数据
-- 备份分支：每次同步前自动备份
+---
 
-## 快速开始
+## ✨ 功能特性
+
+### 📚 知识管理
+- **分类管理** - 自由创建知识分类体系
+- **标签系统** - 多维度标记，灵活检索
+- **全文搜索** - SQLite FTS5 智能检索
+- **分页浏览** - 高效分页，流畅体验
+
+### 🔐 隐私安全
+- **公开文章** - 分享给他人
+- **私密文章** - 仅登录用户可见
+- **加密文章** - AES-256 端到端加密
+- **API 认证** - Bearer Token 安全机制
+
+### ☁️ 云同步
+- **GitHub 同步** - 自动备份到云端
+- **增量同步** - 仅推送变更内容
+- **加密保护** - 敏感内容不上传
+- **定时任务** - GitHub Actions 自动执行
+
+### 💾 备份恢复
+- **一键备份** - 数据库 + 文件归档
+- **历史版本** - 保留时间戳备份
+- **在线下载** - 随时恢复数据
+
+---
+
+## 🚀 快速开始
 
 ### 方式一：Docker Compose（推荐）
 
 ```bash
 # 克隆仓库
-git clone https://github.com/trencps/knowledge-base.git
-cd knowledge-base
+git clone https://github.com/trencps/erudit.git
+cd erudit
 
 # 配置环境变量
 cp .env.example .env
-# 编辑 .env 设置密码等
+# 编辑 .env 设置管理员密码
 
 # 启动服务
 docker-compose up -d
 
-# 访问
-# Web UI: http://NAS_IP:8080
-# API: http://NAS_IP:8080/api
+# 查看状态
+docker-compose ps
 ```
 
 ### 方式二：手动部署
@@ -66,236 +77,189 @@ pip install -r requirements.txt
 python app.py
 ```
 
-## API 文档
+---
+
+## 🌐 访问地址
+
+| 服务 | 地址 |
+|------|------|
+| API | http://localhost:8080 |
+| API 文档 | http://localhost:8080/docs |
+| 健康检查 | http://localhost:8080/api/health |
+
+---
+
+## 📖 API 文档
 
 ### 认证
 
 ```bash
-# 登录
-POST /api/auth/login
-Content-Type: application/json
-
-{
-  "password": "your_password"
-}
-
-# 响应
-{
-  "token": "xxx",
-  "username": "admin"
-}
+# 登录获取 Token
+curl -X GET "http://localhost:8080/api/auth/login?password=your_password"
+# 响应: {"token": "xxx", "username": "admin"}
 ```
 
 ### 文章
 
 ```bash
-# 获取所有文章（公开）
-GET /api/articles?public_only=true
+# 获取文章列表（分页）
+curl "http://localhost:8080/api/articles?page=1&page_size=10" \
+  -H "Authorization: Bearer ***"
 
-# 获取单篇文章
-GET /api/articles/{slug}?password=xxx
+# 全文搜索
+curl "http://localhost:8080/api/search?keyword=AI" \
+  -H "Authorization: Bearer ***"
 
 # 创建文章
-POST /api/articles
-Authorization: Bearer ***
-Content-Type: application/json
+curl -X POST "http://localhost:8080/api/articles" \
+  -H "Authorization: Bearer ***" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "文章标题",
+    "content": "# Markdown 内容",
+    "tags": ["docker", "教程"],
+    "is_public": true
+  }'
 
-{
-  "title": "文章标题",
-  "content": "# Markdown 内容",
-  "category_id": 1,
-  "tags": ["docker", "教程"],
-  "is_public": true,
-  "is_encrypted": false
-}
-
-# 更新文章
-PUT /api/articles/{slug}
-Authorization: Bearer ***
-
-# 删除文章
-DELETE /api/articles/{slug}
-Authorization: Bearer ***
+# 加密文章
+curl -X POST "http://localhost:8080/api/articles" \
+  -H "Authorization: Bearer ***" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "加密文章",
+    "content": "敏感内容",
+    "is_encrypted": true,
+    "encryption_key": "my-secret-key"
+  }'
 ```
 
 ### 分类
 
 ```bash
-# 获取分类
-GET /api/categories
+# 获取分类列表
+curl "http://localhost:8080/api/categories" \
+  -H "Authorization: Bearer ***"
 
 # 创建分类
-POST /api/categories
-Authorization: Bearer ***
-
-{
-  "name": "Docker",
-  "description": "Docker 部署教程"
-}
-
-# 删除分类
-DELETE /api/categories/{id}
-Authorization: Bearer ***
+curl -X POST "http://localhost:8080/api/categories" \
+  -H "Authorization: Bearer ***" \
+  -H "Content-Type: application/json" \
+  -d '{"name": "技术", "description": "技术文章"}'
 ```
 
-### 标签
+### 备份
 
 ```bash
-# 获取所有标签
-GET /api/tags
+# 创建备份
+curl -X POST "http://localhost:8080/api/backup" \
+  -H "Authorization: Bearer ***"
 
-# 按标签筛选文章
-GET /api/articles?tag=docker
+# 查看备份列表
+curl "http://localhost:8080/api/backups" \
+  -H "Authorization: Bearer ***"
+
+# 下载备份
+curl "http://localhost:8080/api/backups/backup_20260821_100000.tar.gz" \
+  -H "Authorization: Bearer ***" -o backup.tar.gz
 ```
 
-### 统计
+---
+
+## ⚙️ 环境变量
+
+| 变量 | 说明 | 默认值 |
+|------|------|--------|
+| `ADMIN_PASSWORD` | 管理员密码 | `admin123` |
+| `JWT_SECRET` | JWT 密钥 | `change-me` |
+| `KB_DB_PATH` | 数据库路径 | `/data/knowledge_base.db` |
+| `KB_ARTICLES_DIR` | 文章目录 | `/articles` |
+| `KB_BACKUP_DIR` | 备份目录 | `/data/backups` |
+
+---
+
+## 🔄 GitHub 同步
+
+### 配置
 
 ```bash
-GET /api/stats
-Authorization: Bearer ***
-```
+# 创建 GitHub Personal Access Token
+# Settings → Developer settings → Personal access tokens → Tokens (classic)
+# 勾选 repo 权限
 
-## 加密功能
-
-### 加密文章
-
-```bash
-POST /api/articles
-Authorization: Bearer ***
-
-{
-  "title": "加密文章",
-  "content": "这是加密的内容",
-  "is_encrypted": true,
-  "encryption_key": "my-secret-key"
-}
-```
-
-### 解密文章
-
-```bash
-# 使用密码访问
-GET /api/articles/{slug}?password=my-secret-key
-
-# 或使用 API Token
-GET /api/articles/{slug}
-Authorization: Bearer ***
-```
-
-## GitHub 自动同步
-
-### 配置 GitHub Token
-
-1. 在 GitHub 创建 Personal Access Token：
-   - Settings → Developer settings → Personal access tokens
-   - 选择 `repo` 权限
-   - 生成并复制 token
-
-2. 配置环境变量：
-```bash
-export GITHUB_TOKEN=ghp_xxxxxxxxxxxx
-export GITHUB_REPO=trencps/knowledge-base
+# 配置环境变量
+export GITHUB_TOKEN=ghp_xxxxxxxxxxxxx
+export GITHUB_REPO=yourusername/erudit
 export GITHUB_BRANCH=main
 ```
 
 ### 手动同步
 
 ```bash
-# 基本同步
+# 执行同步
 python sync.py
-
-# 查看可用选项
-python sync.py --help
 
 # 模拟运行（不提交）
 python sync.py --dry-run
 
 # 详细日志
 python sync.py --log-level DEBUG
-
-# 不创建备份分支
-python sync.py --no-backup
 ```
 
-### GitHub Actions 自动同步
+### GitHub Actions
 
-仓库已配置 GitHub Actions，支持以下触发方式：
+仓库已配置自动同步，支持：
+- **推送触发** - 推送到 main 分支时自动执行
+- **定时触发** - 每天 UTC 00:00 自动同步
+- **手动触发** - Actions 页面点击运行
 
-1. **推送触发**：推送到 main 分支时自动执行
-2. **定时触发**：每天 UTC 00:00 自动执行
-3. **手动触发**：在 Actions 页面点击 "Run workflow"
+---
 
-### 同步后的仓库结构
+## 📊 系统架构
 
 ```
-knowledge-base/
-├── README.md               # 自动生成，包含文章索引
-├── articles/
-│   ├── public/             # 公开文章
-│   │   ├── xxx.md
-│   │   └── yyy.md
-│   ├── private/            # 私密文章
-│   └── encrypted/          # 加密文章（仅元数据）
-├── categories/
-│   ├── index.md            # 分类索引
-│   └── xxx.md              # 各分类详情
-├── tags/
-│   └── index.md            # 标签索引
-└── _backup/                # 备份目录
+┌─────────────────────────────────────────────────────┐
+│                    Erudit API                        │
+│              FastAPI + SQLite (FTS5)                │
+├─────────────────────────────────────────────────────┤
+│  Articles  │  Categories  │  Tags  │  Backups      │
+│  (Markdown)│  (分类体系)   │ (标签) │  (归档)       │
+├─────────────────────────────────────────────────────┤
+│           Docker Container (Port 8080)              │
+└─────────────────────────────────────────────────────┘
+                          │
+                          ▼
+              ┌───────────────────────┐
+              │   GitHub Repository   │
+              │   (云端备份 + 同步)    │
+              └───────────────────────┘
 ```
 
-### 同步特性
+---
 
-- **增量同步**：仅推送变更的文章
-- **加密保护**：加密文章不推送实际内容，仅同步标题/标签等元数据
-- **自动备份**：每次同步前创建备份分支（可禁用）
-- **详细日志**：支持 DEBUG/INFO/WARNING/ERROR 级别
+## 🔒 安全特性
 
-## 环境变量
+1. **密码哈希** - bcrypt 算法加密存储
+2. **JWT 认证** - 无状态 Token 验证
+3. **端到端加密** - AES-256 加密文章内容
+4. **路径安全** - 防止备份文件路径遍历
+5. **敏感过滤** - 备份时自动过滤密码字段
 
-| 变量 | 说明 | 默认值 |
-|------|------|--------|
-| ADMIN_PASSWORD | 管理员密码 | admin123 |
-| JWT_SECRET | JWT 密钥 | 自动生成 |
-| KB_DB_PATH | 数据库路径 | /data/knowledge_base.db |
-| KB_ARTICLES_DIR | 文章目录 | /data/articles |
-| GITHUB_TOKEN | GitHub Token | - |
-| GITHUB_REPO | GitHub 仓库 | - |
-| GITHUB_BRANCH | 目标分支 | main |
+---
 
-## 安全建议
+## 📝 许可证
 
-1. **使用强密码**
-   ```bash
-   ADMIN_PASSWORD=your-strong-password
-   ```
+MIT License - 自由使用、修改和分发
 
-2. **启用 HTTPS**
-   ```yaml
-   # docker-compose.yml
-   nginx:
-     image: nginx:latest
-     volumes:
-       - ./nginx.conf:/etc/nginx/nginx.conf
-       - ./certs:/certs
-   ```
+---
 
-3. **限制访问 IP**
-   ```yaml
-   nginx:
-     # 配置 IP 白名单
-   ```
+## 🤝 贡献
 
-4. **定期备份**
-   ```bash
-   docker exec knowledge-base backup
-   ```
+欢迎提交 Issue 和 Pull Request！
 
-5. **GitHub Token 安全**
-   - 不要将 token 提交到代码仓库
-   - 使用 GitHub Secrets 存储（CI/CD 环境）
-   - 定期轮换 token
+---
 
-## 许可证
+<div align="center">
 
-MIT License
+**Erudit** - 让知识更有价值
+
+</div>
