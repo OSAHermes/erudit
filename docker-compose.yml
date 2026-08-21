@@ -3,25 +3,20 @@ services:
     build: .
     container_name: erudit
     ports:
-      - "8080:8000"
+      - "127.0.0.1:8080:8000"
     volumes:
       - erudit_data:/data
       - erudit_articles:/articles
       - erudit_backups:/data/backups
     environment:
+      - ADMIN_PASSWORD_HASH=${ADMIN_PASSWORD_HASH}
       - ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin123}
       - JWT_SECRET=${JWT_SECRET:-change-me}
       - KB_DB_PATH=/data/knowledge_base.db
       - KB_ARTICLES_DIR=/articles
     restart: unless-stopped
-    networks:
-      - erudit-network
 
 volumes:
   erudit_data:
   erudit_articles:
   erudit_backups:
-
-networks:
-  erudit-network:
-    driver: bridge
