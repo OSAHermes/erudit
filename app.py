@@ -4,11 +4,15 @@ Erudit - 个人知识管理系统
 优雅的知识沉淀平台，支持分类、标签、加密文章
 """
 
-from fastapi import FastAPI, HTTPException, Depends, UploadFile, File, Response
+from fastapi import FastAPI, HTTPException, Depends, UploadFile, File, Response, Request
+from slowapi import Limiter
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel, Field
 from typing import List, Optional, Dict
+from fastapi.responses import JSONResponse
 from datetime import datetime
 import os
 import json
@@ -24,10 +28,11 @@ import bcrypt
 from datetime import datetime, timedelta
 
 app = FastAPI(title="Erudit - 个人知识管理系统", version="2.0.0")
+limiter = Limiter(key_func=get_remote_address)
+app.state.limiter = limiter
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -187,10 +192,18 @@ def verify_password(password: str) -> bool:
 
 @app.get("/api/health")
 def health_check():
-    return {"status": "ok", "articles": 0, "categories": 0}
+    try:
+        conn = get_db()
+        articles = conn.execute("SELECT COUNT(*) FROM articles").fetchone()[0]
+        categories = conn.execute("SELECT COUNT(*) FROM categories").fetchone()[0]
+        conn.close()
+        return {"status": "ok", "articles": articles, "categories": categories}
+    except Exception:
+        return {"status": "error", "articles": 0, "categories": 0}
 
 @app.post("/api/auth/login", response_model=AuthResponse)
-def login(password: str):
+@limiter.limit("5/minute")
+def login(request: Request, password: str):
     if not verify_password(password):
         raise HTTPException(status_code=401, detail="密码错误")
     token = secrets.token_urlsafe(32)
@@ -314,6 +327,7 @@ def get_article(slug: str, password: Optional[str] = None, credentials: HTTPAuth
 @app.post("/api/articles")
 def create_article(article: ArticleCreate, credentials: HTTPAuthorizationCredentials = Depends(HTTPBearer())):
     token_record = validate_token(credentials.credentials)
+    conn = get_db()
     if not token_record:
         raise HTTPException(status_code=401, detail="未授权")
     
@@ -572,6 +586,15 @@ def search_articles(keyword: str = "", credentials: HTTPAuthorizationCredentials
 
     conn.close()
     return {"articles": articles, "total": len(articles), "keyword": keyword}
+
+@app.exception_handler(RateLimitExceeded)
+async def rate_limit_handler(request, exc):
+    return JSONResponse(status_code=429, content={"detail": "请求过于频繁，请稍后再试"})
+
+@app.exception_handler(422)
+async def validation_exception_handler(request, exc):
+    from fastapi.responses import JSONResponse
+    return JSONResponse(status_code=422, content={"detail": str(exc.errors())})
 
 if __name__ == "__main__":
     import uvicorn
