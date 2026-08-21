@@ -21,6 +21,7 @@ import base64
 import sqlite3
 from pathlib import Path
 import secrets
+from contextlib import contextmanager
 import tarfile
 import shutil
 import io
@@ -149,9 +150,24 @@ class AuthResponse(BaseModel):
 
 # 辅助函数
 def get_db():
+    """获取数据库连接（调用方负责关闭）"""
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     return conn
+
+@contextmanager
+def db_session():
+    """数据库连接上下文管理器，自动关闭连接"""
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    try:
+        yield conn
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
 
 def validate_token(token: str):
     """验证 token 是否存在且未过期，返回 token 记录或 None"""
@@ -163,7 +179,21 @@ def validate_token(token: str):
     return record
 
 def generate_slug(title: str) -> str:
-    return hashlib.md5(title.encode()).hexdigest()[:8]
+    """生成唯一slug，避免重复"""
+    base_slug = hashlib.md5(title.encode()).hexdigest()[:8]
+    conn = get_db()
+    slug = base_slug
+    counter = 1
+    while True:
+        existing = conn.execute("SELECT 1 FROM articles WHERE slug = ?", (slug,)).fetchone()
+        if not existing:
+            conn.close()
+            return slug
+        slug = f"{base_slug}{counter}"
+        counter += 1
+        if counter > 100:  # 安全限制
+            conn.close()
+            return base_slug
 
 def encrypt_content(content: str, key: str) -> str:
     """简单的 AES-256 加密 (使用 Python 标准库模拟)"""
