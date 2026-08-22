@@ -46,6 +46,145 @@
             --tag-text: #79c0ff;
         }
 
+        /* ========== 赛博朋克主题 ========== */
+        :root[data-theme="cyberpunk"] {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #12121a;
+            --bg-sidebar: #0d0d15;
+            --text-primary: #e0e0ff;
+            --text-secondary: #a0a0cc;
+            --text-muted: #5a5a8a;
+            --border-color: #1a1a3a;
+            --accent-primary: #00f0ff;
+            --accent-secondary: #ff00aa;
+            --accent-gradient: linear-gradient(135deg, #00f0ff 0%, #0080ff 50%, #ff00aa 100%);
+            --accent-glow: 0 0 20px rgba(0, 240, 255, 0.5);
+            --accent-glow-strong: 0 0 30px rgba(0, 240, 255, 0.8), 0 0 60px rgba(0, 240, 255, 0.4);
+            --hover-bg: rgba(0, 240, 255, 0.1);
+            --shadow-sm: 0 2px 10px rgba(0, 0, 0, 0.5);
+            --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.6), 0 0 15px rgba(0, 240, 255, 0.1);
+            --shadow-lg: 0 10px 40px rgba(0, 0, 0, 0.8), 0 0 30px rgba(0, 240, 255, 0.2);
+            --code-bg: #0a0a15;
+            --tag-bg: rgba(0, 240, 255, 0.15);
+            --tag-text: #00f0ff;
+        }
+
+        [data-theme="cyberpunk"] body {
+            background: var(--bg-primary);
+            background-image: 
+                repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 240, 255, 0.02) 2px, rgba(0, 240, 255, 0.02) 4px),
+                linear-gradient(180deg, rgba(0, 240, 255, 0.02) 0%, transparent 50%, rgba(255, 0, 170, 0.02) 100%);
+        }
+
+        [data-theme="cyberpunk"] .header {
+            background: linear-gradient(180deg, #0a0a15 0%, #12121a 100%);
+            border-bottom: 1px solid var(--accent-primary);
+            box-shadow: var(--accent-glow);
+        }
+
+        [data-theme="cyberpunk"] .navbar-brand {
+            font-family: 'Courier New', monospace;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            text-shadow: var(--accent-glow);
+        }
+
+        [data-theme="cyberpunk"] .navbar-btn {
+            background: transparent;
+            border: 1px solid var(--accent-primary);
+            color: var(--accent-primary);
+            font-family: 'Courier New', monospace;
+            text-transform: uppercase;
+        }
+
+        [data-theme="cyberpunk"] .navbar-btn:hover {
+            background: rgba(0, 240, 255, 0.1);
+            box-shadow: var(--accent-glow);
+        }
+
+        [data-theme="cyberpunk"] .navbar-btn.primary {
+            background: var(--accent-primary);
+            color: #0a0a0f;
+            font-weight: 700;
+        }
+
+        [data-theme="cyberpunk"] .sidebar {
+            border-left: 2px solid var(--accent-primary);
+            box-shadow: var(--shadow-md);
+        }
+
+        [data-theme="cyberpunk"] .stat-item {
+            background: linear-gradient(135deg, rgba(0, 240, 255, 0.1) 0%, rgba(10, 10, 15, 0.9) 50%, rgba(255, 0, 170, 0.1) 100%);
+            border: 1px solid var(--accent-primary);
+        }
+
+        [data-theme="cyberpunk"] .stat-number {
+            font-family: 'Courier New', monospace;
+            color: var(--accent-primary);
+            text-shadow: var(--accent-glow);
+        }
+
+        [data-theme="cyberpunk"] .article-item {
+            border-color: var(--border-color);
+        }
+
+        [data-theme="cyberpunk"] .article-item:hover,
+        [data-theme="cyberpunk"] .article-item.active {
+            border-color: var(--accent-primary);
+            background: var(--hover-bg);
+        }
+
+        [data-theme="cyberpunk"] .form-input,
+        [data-theme="cyberpunk"] .editor-input,
+        [data-theme="cyberpunk"] .editor-textarea {
+            background: var(--code-bg);
+            border-color: var(--border-color);
+            font-family: 'Courier New', monospace;
+        }
+
+        [data-theme="cyberpunk"] .form-input:focus,
+        [data-theme="cyberpunk"] .editor-input:focus,
+        [data-theme="cyberpunk"] .editor-textarea:focus {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.3);
+        }
+
+        [data-theme="cyberpunk"] .btn {
+            font-family: 'Courier New', monospace;
+            text-transform: uppercase;
+        }
+
+        [data-theme="cyberpunk"] .btn-primary {
+            background: transparent;
+            border: 1px solid var(--accent-primary);
+            color: var(--accent-primary);
+        }
+
+        [data-theme="cyberpunk"] .btn-primary:hover {
+            background: var(--accent-primary);
+            color: #0a0a0f;
+            box-shadow: var(--accent-glow-strong);
+        }
+
+        [data-theme="cyberpunk"] .login-card {
+            border: 1px solid var(--accent-primary);
+            box-shadow: var(--shadow-lg), var(--accent-glow);
+        }
+
+        [data-theme="cyberpunk"] .theme-toggle {
+            background: rgba(0, 240, 255, 0.2);
+            border: 1px solid var(--accent-primary);
+        }
+
+        [data-theme="cyberpunk"] .theme-toggle::before {
+            background: var(--accent-primary);
+            box-shadow: 0 0 10px var(--accent-primary);
+        }
+
+        [data-theme="cyberpunk"] ::-webkit-scrollbar-thumb {
+            background: var(--accent-primary);
+        }
+
         /* ========== 基础样式 ========== */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -522,6 +661,7 @@
                 <button class="navbar-btn" onclick="showSearch()">🔍 搜索</button>
                 <button class="navbar-btn" onclick="showRSS()">📡 RSS</button>
                 <div class="navbar-btn" onclick="toggleTheme()" title="切换主题">
+                    <span id="themeLabel">CYBER</span>
                     <span class="theme-icon">☀️</span>
                     <button class="theme-toggle"></button>
                     <span class="theme-icon">🌙</span>
@@ -596,9 +736,13 @@
         function toggleTheme() {
             const html = document.documentElement;
             const current = html.getAttribute('data-theme');
-            const next = current === 'light' ? 'dark' : 'light';
+            const themes = ["light", "dark", "cyberpunk"];
+            const idx = themes.indexOf(current);
+            const next = themes[(idx + 1) % themes.length];
             html.setAttribute('data-theme', next);
             localStorage.setItem('erudit_theme', next);
+            const label = document.getElementById('themeLabel');
+            if (label) label.textContent = next.toUpperCase();
         }
 
         // 初始化主题
