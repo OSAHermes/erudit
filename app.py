@@ -258,6 +258,7 @@ def login(request: Request, password: str = Form(default=None)):
 @app.post("/api/auth/change-password")
 @limiter.limit("3/minute")
 def change_password(
+    request: Request,
     old_password: str = Form(...),
     new_password: str = Form(...),
     credentials: HTTPAuthorizationCredentials = Depends(HTTPBearer())
