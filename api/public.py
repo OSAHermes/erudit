@@ -6,6 +6,7 @@ from fastapi.responses import HTMLResponse, Response
 from core.database import get_articles, get_article, search_articles, get_categories, get_stats
 from core.backup import get_backups
 import json
+import os
 
 router = APIRouter(tags=["public"])
 
