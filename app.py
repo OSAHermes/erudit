@@ -13,7 +13,7 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel, Field
 from typing import List, Optional, Dict
 from fastapi.responses import JSONResponse
-from datetime import datetime
+from datetime import datetime, timedelta
 import os
 import json
 import hashlib
@@ -26,7 +26,6 @@ import tarfile
 import shutil
 import io
 import bcrypt
-from datetime import datetime, timedelta
 
 app = FastAPI(title="Erudit - 个人知识管理系统", version="2.0.0")
 limiter = Limiter(key_func=get_remote_address)
@@ -256,12 +255,12 @@ def get_categories():
 def create_category(category: CategoryCreate, credentials: HTTPAuthorizationCredentials = Depends(HTTPBearer())):
     # 验证 token
     token_record = validate_token(credentials.credentials)
+    conn = get_db()
     if not token_record:
+        conn.close()
         raise HTTPException(status_code=401, detail="未授权")
-    conn.close()
     
     slug = category.name.lower().replace(" ", "-")
-    conn = get_db()
     conn.execute("INSERT INTO categories (name, slug, description) VALUES (?, ?, ?)",
                  (category.name, slug, category.description))
     conn.commit()
@@ -555,10 +554,6 @@ def create_backup_endpoint(credentials: HTTPAuthorizationCredentials = Depends(H
 def list_backups(credentials: HTTPAuthorizationCredentials = Depends(HTTPBearer())):
     """列出所有可用备份"""
     token_record = validate_token(credentials.credentials)
-    if not token_record:
-        raise HTTPException(status_code=401, detail="未授权")
-    conn.close()
-    
     backups = get_backup_files()
     return {"backups": backups, "total": len(backups)}
 
@@ -716,8 +711,9 @@ def export_article(slug: str, format: str = "markdown", credentials: HTTPAuthori
         headers={"Content-Disposition": f"attachment; filename={filename}"}
     )
 
-@app.exception_handler(RateLimitExceeded)
-def search_articles(keyword: str = "", credentials: HTTPAuthorizationCredentials = Depends(HTTPBearer())):
+@app.get("/api/search")
+@limiter.limit("10/minute")
+def search_articles(request: Request, keyword: str = "", credentials: HTTPAuthorizationCredentials = Depends(HTTPBearer())):
     """全文搜索文章"""
     token_record = validate_token(credentials.credentials)
     conn = get_db()
