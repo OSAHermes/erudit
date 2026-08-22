@@ -297,10 +297,9 @@ def create_category(category: CategoryCreate, credentials: HTTPAuthorizationCred
     token_record = validate_token(credentials.credentials)
     if not token_record:
         raise HTTPException(status_code=401, detail="未授权")
-    conn.close()
-    
-    slug = category.name.lower().replace(" ", "-")
+
     conn = get_db()
+    slug = category.name.lower().replace(" ", "-")
     conn.execute("INSERT INTO categories (name, slug, description) VALUES (?, ?, ?)",
                  (category.name, slug, category.description))
     conn.commit()
