@@ -4,7 +4,7 @@ Erudit - 个人知识管理系统
 优雅的知识沉淀平台，支持分类、标签、加密文章
 """
 
-from fastapi import FastAPI, HTTPException, Depends, UploadFile, File, Response, Request
+from fastapi import FastAPI, HTTPException, Depends, UploadFile, File, Response, Request, Form, Query
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
@@ -234,8 +234,13 @@ def health_check():
         return {"status": "error", "articles": 0, "categories": 0}
 
 @app.post("/api/auth/login", response_model=AuthResponse)
+@app.get("/api/auth/login", response_model=AuthResponse)
 @limiter.limit("5/minute")
-def login(request: Request, password: str):
+def login(request: Request, password: str = Form(default=None), password_q: str = Query(default=None)):
+    # 支持 query parameter 和 form data 两种方式
+    password = password or password_q
+    if not password:
+        raise HTTPException(status_code=422, detail="密码不能为空")
     if not verify_password(password):
         raise HTTPException(status_code=401, detail="密码错误")
     token = secrets.token_urlsafe(32)

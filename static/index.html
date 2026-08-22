@@ -66,7 +66,11 @@
         let token = '', articles = [];
         async function login() {
             const password = document.getElementById('password').value;
-            const resp = await fetch(`/api/auth/login?password=${encodeURIComponent(password)}`);
+            const resp = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `password=${encodeURIComponent(password)}`
+            });
             const data = await resp.json();
             if (data.token) {
                 token = data.token;
