@@ -8,7 +8,7 @@ from core.backup import get_backups
 import json
 import os
 
-router = APIRouter(tags=["public"])
+router = APIRouter(prefix="/api", tags=["public"])
 
 
 @router.get("/health")
