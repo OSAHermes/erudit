@@ -236,9 +236,12 @@ def health_check():
 @app.post("/api/auth/login", response_model=AuthResponse)
 @app.get("/api/auth/login", response_model=AuthResponse)
 @limiter.limit("5/minute")
-def login(request: Request, password: str = Form(default=None), password_q: str = Query(default=None)):
-    # 支持 query parameter 和 form data 两种方式
-    password = password or password_q
+def login(request: Request, password: str = Form(default=None)):
+    """支持 GET (query) 和 POST (form) 两种登录方式"""
+    # FastAPI Form 在 GET 请求时无法自动解析，需要从 query 获取
+    if password is None:
+        # 从 URL query 参数获取
+        password = request.query_params.get("password")
     if not password:
         raise HTTPException(status_code=422, detail="密码不能为空")
     if not verify_password(password):
