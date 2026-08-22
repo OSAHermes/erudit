@@ -255,6 +255,34 @@ def login(request: Request, password: str = Form(default=None)):
     conn.close()
     return {"token": token, "username": "admin"}
 
+@app.post("/api/auth/change-password")
+@limiter.limit("3/minute")
+def change_password(
+    old_password: str = Form(...),
+    new_password: str = Form(...),
+    credentials: HTTPAuthorizationCredentials = Depends(HTTPBearer())
+):
+    """修改管理员密码"""
+    # 验证旧密码
+    if not verify_password(old_password):
+        raise HTTPException(status_code=401, detail="旧密码错误")
+    
+    # 验证新密码长度
+    if len(new_password) < 4:
+        raise HTTPException(status_code=422, detail="新密码至少4位")
+    
+    # 更新密码哈希
+    global ADMIN_PASSWORD_HASH
+    ADMIN_PASSWORD_HASH = bcrypt.hashpw(new_password.encode(), bcrypt.gensalt()).decode()
+    
+    # 清除所有旧 token
+    conn = get_db()
+    conn.execute("DELETE FROM tokens")
+    conn.commit()
+    conn.close()
+    
+    return {"message": "密码修改成功，请重新登录"}
+
 @app.get("/api/categories")
 def get_categories():
     conn = get_db()
