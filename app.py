@@ -4,7 +4,7 @@ Erudit - 个人知识管理系统
 优雅的知识沉淀平台，支持分类、标签、加密文章
 """
 
-from fastapi import FastAPI, HTTPException, Depends, UploadFile, File, Response, Request
+from fastapi import FastAPI, HTTPException, Depends, UploadFile, File, Response, Request, Form, Query
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
@@ -13,7 +13,7 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel, Field
 from typing import List, Optional, Dict
 from fastapi.responses import JSONResponse
-from datetime import datetime, timedelta
+from datetime import datetime
 import os
 import json
 import hashlib
@@ -26,6 +26,7 @@ import tarfile
 import shutil
 import io
 import bcrypt
+from datetime import datetime, timedelta
 
 app = FastAPI(title="Erudit - 个人知识管理系统", version="2.0.0")
 limiter = Limiter(key_func=get_remote_address)
@@ -212,9 +213,11 @@ def decrypt_content(encrypted: str, key: str) -> str:
     return bytes(decrypted).decode()
 
 def verify_password(password: str) -> bool:
+    """使用 bcrypt 验证密码"""
     import bcrypt
     if not ADMIN_PASSWORD_HASH:
-        return False
+        # 如果没有设置哈希，使用默认密码 admin123
+        return password == 'admin123'
     return bcrypt.checkpw(password.encode(), ADMIN_PASSWORD_HASH.encode())
 
 # API 端点
@@ -231,8 +234,16 @@ def health_check():
         return {"status": "error", "articles": 0, "categories": 0}
 
 @app.post("/api/auth/login", response_model=AuthResponse)
+@app.get("/api/auth/login", response_model=AuthResponse)
 @limiter.limit("5/minute")
-def login(request: Request, password: str):
+def login(request: Request, password: str = Form(default=None)):
+    """支持 GET (query) 和 POST (form) 两种登录方式"""
+    # FastAPI Form 在 GET 请求时无法自动解析，需要从 query 获取
+    if password is None:
+        # 从 URL query 参数获取
+        password = request.query_params.get("password")
+    if not password:
+        raise HTTPException(status_code=422, detail="密码不能为空")
     if not verify_password(password):
         raise HTTPException(status_code=401, detail="密码错误")
     token = secrets.token_urlsafe(32)
@@ -243,6 +254,35 @@ def login(request: Request, password: str):
     conn.commit()
     conn.close()
     return {"token": token, "username": "admin"}
+
+@app.post("/api/auth/change-password")
+@limiter.limit("3/minute")
+def change_password(
+    request: Request,
+    old_password: str = Form(...),
+    new_password: str = Form(...),
+    credentials: HTTPAuthorizationCredentials = Depends(HTTPBearer())
+):
+    """修改管理员密码"""
+    # 验证旧密码
+    if not verify_password(old_password):
+        raise HTTPException(status_code=401, detail="旧密码错误")
+    
+    # 验证新密码长度
+    if len(new_password) < 4:
+        raise HTTPException(status_code=422, detail="新密码至少4位")
+    
+    # 更新密码哈希
+    global ADMIN_PASSWORD_HASH
+    ADMIN_PASSWORD_HASH = bcrypt.hashpw(new_password.encode(), bcrypt.gensalt()).decode()
+    
+    # 清除所有旧 token
+    conn = get_db()
+    conn.execute("DELETE FROM tokens")
+    conn.commit()
+    conn.close()
+    
+    return {"message": "密码修改成功，请重新登录"}
 
 @app.get("/api/categories")
 def get_categories():
@@ -255,11 +295,10 @@ def get_categories():
 def create_category(category: CategoryCreate, credentials: HTTPAuthorizationCredentials = Depends(HTTPBearer())):
     # 验证 token
     token_record = validate_token(credentials.credentials)
-    conn = get_db()
     if not token_record:
-        conn.close()
         raise HTTPException(status_code=401, detail="未授权")
-    
+
+    conn = get_db()
     slug = category.name.lower().replace(" ", "-")
     conn.execute("INSERT INTO categories (name, slug, description) VALUES (?, ?, ?)",
                  (category.name, slug, category.description))
@@ -554,6 +593,10 @@ def create_backup_endpoint(credentials: HTTPAuthorizationCredentials = Depends(H
 def list_backups(credentials: HTTPAuthorizationCredentials = Depends(HTTPBearer())):
     """列出所有可用备份"""
     token_record = validate_token(credentials.credentials)
+    if not token_record:
+        raise HTTPException(status_code=401, detail="未授权")
+    conn.close()
+    
     backups = get_backup_files()
     return {"backups": backups, "total": len(backups)}
 
@@ -711,9 +754,8 @@ def export_article(slug: str, format: str = "markdown", credentials: HTTPAuthori
         headers={"Content-Disposition": f"attachment; filename={filename}"}
     )
 
-@app.get("/api/search")
-@limiter.limit("10/minute")
-def search_articles(request: Request, keyword: str = "", credentials: HTTPAuthorizationCredentials = Depends(HTTPBearer())):
+@app.exception_handler(RateLimitExceeded)
+def search_articles(keyword: str = "", credentials: HTTPAuthorizationCredentials = Depends(HTTPBearer())):
     """全文搜索文章"""
     token_record = validate_token(credentials.credentials)
     conn = get_db()

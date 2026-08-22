@@ -2,8 +2,7 @@ services:
   erudit:
     build: .
     container_name: erudit
-    ports:
-      - "127.0.0.1:8080:8000"
+    network_mode: host
     volumes:
       - erudit_data:/data
       - erudit_articles:/articles

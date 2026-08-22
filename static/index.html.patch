@@ -1,0 +1,40 @@
+        function showRSS() { window.open('/api/rss'); }
+        async function showChangePassword() {
+            const oldPwd = prompt('请输入旧密码:');
+            if (!oldPwd) return;
+            
+            const newPwd = prompt('请输入新密码 (至少4位):');
+            if (!newPwd || newPwd.length < 4) {
+                alert('新密码至少4位');
+                return;
+            }
+            
+            const confirmPwd = prompt('请确认新密码:');
+            if (newPwd !== confirmPwd) {
+                alert('两次输入的密码不一致');
+                return;
+            }
+            
+            const resp = await fetch('/api/auth/change-password', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: `old_password=${encodeURIComponent(oldPwd)}&new_password=${encodeURIComponent(newPwd)}`
+            });
+            
+            const data = await resp.json();
+            if (data.message) {
+                alert('密码修改成功，请重新登录');
+                localStorage.removeItem('erudit_token');
+                location.reload();
+            } else {
+                alert(data.detail || '修改失败');
+            }
+        }
+        function logout() {
+            token = ''; localStorage.removeItem('erudit_token');
+            document.getElementById('loginSection').classList.remove('hidden');
+            document.getElementById('mainSection').classList.add('hidden');
+        }
