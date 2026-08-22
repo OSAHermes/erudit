@@ -754,8 +754,9 @@ def export_article(slug: str, format: str = "markdown", credentials: HTTPAuthori
         headers={"Content-Disposition": f"attachment; filename={filename}"}
     )
 
-@app.exception_handler(RateLimitExceeded)
-def search_articles(keyword: str = "", credentials: HTTPAuthorizationCredentials = Depends(HTTPBearer())):
+@app.get("/api/search")
+@limiter.limit("10/minute")
+def search_articles(request: Request, keyword: str = "", credentials: HTTPAuthorizationCredentials = Depends(HTTPBearer())):
     """全文搜索文章"""
     token_record = validate_token(credentials.credentials)
     conn = get_db()
