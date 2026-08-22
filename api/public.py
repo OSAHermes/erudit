@@ -7,7 +7,7 @@ from core.database import get_articles, get_article, search_articles, get_catego
 from core.backup import get_backups
 import json
 
-router = APIRouter(prefix="/api", tags=["public"])
+router = APIRouter(tags=["public"])
 
 
 @router.get("/health")
@@ -23,8 +23,8 @@ def health_check():
 @router.get("/")
 def serve_frontend():
     """提供前端页面"""
-    ui_path = "static/index.html"
-    if __import__("os").path.exists(ui_path):
+    ui_path = "/app/static/index.html"
+    if os.path.exists(ui_path):
         with open(ui_path, "r") as f:
             return HTMLResponse(content=f.read())
     return HTMLResponse(content="<h1>Erudit - 知识管理系统</h1><p>前端页面未找到</p>")
