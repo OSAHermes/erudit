@@ -1,7 +1,7 @@
 """
 公共 API 路由 - 无需认证
 """
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, Request
 from fastapi.responses import HTMLResponse, Response
 from core.database import get_articles, get_article, search_articles, get_categories, get_stats
 from core.backup import get_backups
@@ -96,16 +96,21 @@ def list_backups():
 
 
 @router.get("/rss")
-def get_rss(category: str = Query(None)):
+def get_rss(request: Request, category: str = Query(None)):
     """获取 RSS feed"""
     articles = get_articles(public_only=True) if not category else get_articles(category_id=category)
+    
+    # 从请求获取基础 URL，避免硬编码
+    base_url = f"{request.url.scheme}://{request.url.hostname}"
+    if request.url.port:
+        base_url += f":{request.url.port}"
     
     rss_items = []
     for article in articles.get("articles", []):
         rss_items.append(f"""
             <item>
                 <title>{article['title']}</title>
-                <link>/articles/{article['slug']}</link>
+                <link>{base_url}/api/articles/{article['slug']}</link>
                 <description>{article['content'][:200]}...</description>
                 <pubDate>{article['created_at']}</pubDate>
             </item>
@@ -114,7 +119,7 @@ def get_rss(category: str = Query(None)):
     rss_channel = f"""
     <channel>
         <title>Erudit 知识库</title>
-        <link>http://localhost:8000</link>
+        <link>{base_url}</link>
         <description>个人知识管理系统</description>
         {''.join(rss_items)}
     </channel>

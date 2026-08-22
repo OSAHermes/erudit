@@ -1,7 +1,8 @@
 """
 管理 API 路由 - 需要认证
 """
-from fastapi import APIRouter, HTTPException, UploadFile, File, Form, Request, Depends
+from fastapi import APIRouter, HTTPException, UploadFile, File, Form, Request, Depends, Response
+from datetime import datetime, timedelta
 from fastapi.security import HTTPAuthorizationCredentials
 from pydantic import BaseModel
 from typing import List, Optional
@@ -187,6 +188,3 @@ def upload_file(file: UploadFile = File(...), user: dict = Depends(get_current_u
         "url": f"/api/uploads/{unique_filename}"
     }
 
-
-from fastapi import Response
-from datetime import datetime, timedelta

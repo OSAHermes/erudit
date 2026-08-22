@@ -155,6 +155,10 @@ def generate_slug(title: str) -> str:
 def verify_password(password: str) -> bool:
     """验证密码"""
     if not ADMIN_PASSWORD_HASH:
+        # ⚠️ 安全警告：未设置密码哈希时使用默认密码
+        # 请通过环境变量 ADMIN_PASSWORD_HASH 设置安全的密码哈希
+        import warnings
+        warnings.warn("使用默认密码 'admin123'，请在生产环境中设置 ADMIN_PASSWORD_HASH", UserWarning)
         return password == "admin123"
     return bcrypt.checkpw(password.encode(), ADMIN_PASSWORD_HASH.encode())
 
