@@ -806,7 +806,6 @@
             <button class="nav-btn" onclick="showSearch()">🔍 搜索</button>
             <button class="nav-btn" onclick="showRSS()">📡 RSS</button>
             <a href="/docs" class="nav-btn">📖 API</a>
-            <a href="/admin" class="nav-btn primary">⚙️ 后台</a>
         </nav>
     </header>
 
@@ -965,6 +964,7 @@
             try {
                 const res = await fetch('/articles');
                 const data = await res.json();
+                console.log('Articles response:', data);
                 const list = document.getElementById('article-list');
                 
                 if (data.articles && data.articles.length > 0) {
@@ -978,6 +978,7 @@
                     list.innerHTML = '<div class="loading">暂无文章</div>';
                 }
             } catch (e) {
+                console.error('Load articles error:', e);
                 document.getElementById('article-list').innerHTML = '<div class="loading">加载失败</div>';
             }
         }
@@ -987,6 +988,7 @@
             try {
                 const res = await fetch(`/articles/${slug}`);
                 const data = await res.json();
+                console.log('Article data:', data);
                 currentArticle = data;
                 
                 // 高亮当前文章
@@ -998,6 +1000,7 @@
                 });
                 
                 // 渲染内容
+                const content = data.content || '';
                 document.getElementById('content').innerHTML = `
                     <div class="article-view">
                         <div class="article-header">
@@ -1005,15 +1008,30 @@
                             <div class="article-meta">
                                 <span>📅 ${data.created_at || '未知'}</span>
                                 ${data.category ? `<span>📁 ${data.category}</span>` : ''}
-                                ${data.tags ? `<span>🏷️ ${data.tags.join(', ')}</span>` : ''}
+                                ${data.tags ? `<span>🏷️ ${typeof data.tags === 'string' ? data.tags : data.tags.join(', ')}</span>` : ''}
                             </div>
                         </div>
-                        <div class="article-content">${data.content}</div>
+                        <div class="article-content">${markdownToHtml(content)}</div>
                     </div>
                 `;
             } catch (e) {
+                console.error('Show article error:', e);
                 document.getElementById('content').innerHTML = '<div class="loading">加载失败</div>';
             }
+        }
+
+        // 简单的 Markdown 转 HTML
+        function markdownToHtml(md) {
+            if (!md) return '';
+            return md
+                .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+                .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+                .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+                .replace(/\*\*(.*)\*\*/gim, '<strong>$1</strong>')
+                .replace(/\*(.*)\*/gim, '<em>$1</em>')
+                .replace(/```([\s\S]*?)```/gim, '<pre><code>$1</code></pre>')
+                .replace(/`([^`]+)`/gim, '<code>$1</code>')
+                .replace(/\n/gim, '<br />');
         }
 
         // 搜索
