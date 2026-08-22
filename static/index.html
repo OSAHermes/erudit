@@ -87,7 +87,16 @@
             const resp = await fetch('/api/articles', { headers: { 'Authorization': 'Bearer ' + token } });
             const data = await resp.json();
             articles = data.articles || [];
+            document.getElementById('statArticles').textContent = data.total || articles.length;
             renderList();
+            // 加载分类统计
+            loadCategories();
+        }
+        async function loadCategories() {
+            if (!token) return;
+            const resp = await fetch('/api/categories', { headers: { 'Authorization': 'Bearer ' + token } });
+            const data = await resp.json();
+            document.getElementById('statCategories').textContent = data.length || 0;
         }
         function renderList() {
             document.getElementById('articleList').innerHTML = articles.map(a =>
