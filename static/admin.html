@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Erudit - 管理后台</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .header { background: #2c3e50; color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .header h1 { font-size: 24px; }
+        .header a { color: #3498db; text-decoration: none; }
+        .login-form { background: white; padding: 30px; border-radius: 8px; max-width: 400px; margin: 50px auto; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .login-form input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 4px; }
+        .login-form button { width: 100%; padding: 12px; background: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; }
+        .login-form button:hover { background: #2980b9; }
+        .toolbar { background: white; padding: 15px; border-radius: 8px; margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap; }
+        .toolbar button { padding: 8px 16px; background: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        .toolbar button:hover { background: #2980b9; }
+        .toolbar button.secondary { background: #95a5a6; }
+        .toolbar button.secondary:hover { background: #7f8c8d; }
+        .toolbar button.danger { background: #e74c3c; }
+        .toolbar button.danger:hover { background: #c0392b; }
+        .content { display: grid; grid-template-columns: 250px 1fr; gap: 20px; }
+        .sidebar { background: white; padding: 20px; border-radius: 8px; height: fit-content; }
+        .main { background: white; padding: 20px; border-radius: 8px; }
+        .article-list { list-style: none; }
+        .article-list li { padding: 10px; border-bottom: 1px solid #eee; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+        .article-list li:hover { background: #f8f9fa; }
+        .article-list li.active { background: #e3f2fd; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; }
+        .form-group textarea { min-height: 300px; font-family: monospace; }
+        .stats { background: #ecf0f1; padding: 15px; border-radius: 4px; margin-bottom: 20px; }
+        .hidden { display: none; }
+        .badge { background: #3498db; color: white; padding: 2px 8px; border-radius: 12px; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="loginSection" class="login-form">
+            <h2 style="text-align:center;margin-bottom:20px;">Erudit 管理后台</h2>
+            <input type="password" id="password" placeholder="输入密码">
+            <button onclick="login()">登录</button>
+        </div>
+        <div id="mainSection" class="hidden">
+            <div class="header">
+                <h1>⚙️ Erudit 管理后台</h1>
+                <div>
+                    <a href="/" style="margin-right:15px;">📖 返回前台</a>
+                    <button onclick="logout()" style="padding:5px 15px;background:#e74c3c;color:white;border:none;border-radius:4px;cursor:pointer;">退出</button>
+                </div>
+            </div>
+            <div class="toolbar">
+                <button onclick="showCreate()">+ 新建文章</button>
+                <button onclick="showBackup()">💾 备份</button>
+                <button onclick="showCleanup()">🗑️ 清理</button>
+                <button onclick="showRSS()">📡 RSS</button>
+                <button onclick="showChangePassword()">🔑 修改密码</button>
+                <button class="secondary" onclick="location.href='/api/docs'">📚 API 文档</button>
+            </div>
+            <div class="content">
+                <div class="sidebar">
+                    <div class="stats">
+                        <div><strong>统计</strong></div>
+                        <div>文章: <span id="statArticles">0</span></div>
+                        <div>分类: <span id="statCategories">0</span></div>
+                        <div>版本: 3.0.0</div>
+                    </div>
+                    <h3>文章列表</h3>
+                    <ul class="article-list" id="articleList"></ul>
+                </div>
+                <div class="main" id="editor"><h2>选择文章或创建新文章</h2></div>
+            </div>
+        </div>
+    </div>
+    <script>
+        let token = '', articles = [], categories = [];
+        async function login() {
+            const password = document.getElementById('password').value;
+            if (!password) { alert('请输入密码'); return; }
+            const resp = await fetch('/api/auth/login?password=' + encodeURIComponent(password));
+            const data = await resp.json();
+            if (data.token) {
+                token = data.token;
+                localStorage.setItem('erudit_token', token);
+                showMain();
+            } else { alert(data.detail || '密码错误'); }
+        }
+        function showMain() {
+            document.getElementById('loginSection').classList.add('hidden');
+            document.getElementById('mainSection').classList.remove('hidden');
+            loadArticles();
+        }
+        async function loadArticles() {
+            if (!token) return;
+            const resp = await fetch('/api/articles?page=1&page_size=50', { headers: { 'Authorization': 'Bearer ' + token } });
+            const data = await resp.json();
+            articles = data.articles || [];
+            document.getElementById('statArticles').textContent = data.total || articles.length;
+            renderList();
+            await loadCategories();
+        }
+        async function loadCategories() {
+            if (!token) return;
+            const resp = await fetch('/api/categories', { headers: { 'Authorization': 'Bearer ' + token } });
+            categories = await resp.json();
+            document.getElementById('statCategories').textContent = categories.length || 0;
+        }
+        function renderList() {
+            document.getElementById('articleList').innerHTML = articles.map(a =>
+                '<li onclick="loadArticle(\\'' + a.slug + '\\')"><span>' + a.title + '</span><span class="badge">' + (a.category_id || '未分类') + '</span></li>'
+            ).join('');
+        }
+        async function loadArticle(slug) {
+            const resp = await fetch('/api/articles/' + slug, { headers: { 'Authorization': 'Bearer ' + token } });
+            const article = await resp.json();
+            document.getElementById('editor').innerHTML =
+                '<h2>编辑: ' + article.title + '</h2>' +
+                '<div class="form-group"><label>标题</label><input type="text" id="editTitle" value="' + escapeHtml(article.title) + '"></div>' +
+                '<div class="form-group"><label>分类</label><select id="editCategory"><option value="">无分类</option>' +
+                categories.map(c => '<option value="' + c.id + '">' + c.name + '</option>').join('') + '</select></div>' +
+                '<div class="form-group"><label>内容 (Markdown)</label><textarea id="editContent">' + escapeHtml(article.content) + '</textarea></div>' +
+                '<button onclick="saveArticle(\\'' + slug + '\\')">保存</button> ' +
+                '<button onclick="exportArticle(\\'' + slug + '\\')" style="margin-left:10px;">导出</button> ' +
+                '<button onclick="deleteArticle(\\'' + slug + '\\')" style="margin-left:10px;background:#e74c3c;">删除</button>' +
+                '<div style="margin-top:20px;padding:15px;background:#f8f9fa;border-radius:4px;">' +
+                '<p><strong>发布时间:</strong> ' + article.created_at + '</p>' +
+                '<p><strong>更新时间:</strong> ' + article.updated_at + '</p>' +
+                '</div>';
+        }
+        function escapeHtml(text) {
+            if (!text) return '';
+            return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+        async function saveArticle(slug) {
+            const title = document.getElementById('editTitle').value;
+            const content = document.getElementById('editContent').value;
+            const category_id = document.getElementById('editCategory').value;
+            await fetch('/api/articles/' + slug, {
+                method: 'PUT',
+                headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ title: title, content: content, category_id: category_id || null })
+            });
+            alert('保存成功');
+            loadArticles();
+        }
+        async function deleteArticle(slug) {
+            if (!confirm('确定删除这篇文章？此操作不可恢复。')) return;
+            await fetch('/api/articles/' + slug, { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + token } });
+            alert('删除成功');
+            loadArticles();
+        }
+        function exportArticle(slug) {
+            window.open('/api/exports/' + slug + '?format=markdown');
+        }
+        function showCreate() {
+            document.getElementById('editor').innerHTML =
+                '<h2>新建文章</h2>' +
+                '<div class="form-group"><label>标题</label><input type="text" id="newTitle"></div>' +
+                '<div class="form-group"><label>分类</label><select id="newCategory"><option value="">无分类</option>' +
+                categories.map(c => '<option value="' + c.id + '">' + c.name + '</option>').join('') + '</select></div>' +
+                '<div class="form-group"><label>内容 (Markdown)</label><textarea id="newContent" placeholder="# 标题
+
+## 章节
+
+内容..."></textarea></div>' +
+                '<div class="form-group"><label>标签 (逗号分隔)</label><input type="text" id="newTags" placeholder="docker, fastapi, 教程"></div>' +
+                '<button onclick="createArticle()">创建</button>';
+        }
+        async function createArticle() {
+            const title = document.getElementById('newTitle').value;
+            const content = document.getElementById('newContent').value;
+            const category_id = document.getElementById('newCategory').value;
+            const tags = document.getElementById('newTags').value.split(',').map(t => t.trim()).filter(t => t);
+            if (!title || !content) { alert('标题和内容不能为空'); return; }
+            await fetch('/api/articles', {
+                method: 'POST',
+                headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ title: title, content: content, category_id: category_id || null, tags: tags })
+            });
+            alert('创建成功');
+            loadArticles();
+        }
+        function showBackup() {
+            if (confirm('创建备份？')) {
+                fetch('/api/backup', { method: 'POST', headers: { 'Authorization': 'Bearer ' + token } })
+                    .then(r => r.json()).then(d => alert('备份: ' + d.filename));
+            }
+        }
+        function showCleanup() {
+            if (confirm('清理超过 7 天的旧备份？')) {
+                fetch('/api/backup/cleanup', { method: 'POST', headers: { 'Authorization': 'Bearer ' + token } })
+                    .then(r => r.json()).then(d => alert(d.message || '清理完成'));
+            }
+        }
+        function showRSS() {
+            window.open('/api/rss');
+        }
+        async function showChangePassword() {
+            const oldPwd = prompt('请输入旧密码:');
+            if (!oldPwd) return;
+            const newPwd = prompt('请输入新密码 (至少4位):');
+            if (!newPwd || newPwd.length < 4) { alert('新密码至少4位'); return; }
+            const confirmPwd = prompt('请确认新密码:');
+            if (newPwd !== confirmPwd) { alert('两次输入的密码不一致'); return; }
+            const resp = await fetch('/api/auth/change-password', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Authorization': 'Bearer ' + token },
+                body: 'old_password=' + encodeURIComponent(oldPwd) + '&new_password=' + encodeURIComponent(newPwd)
+            });
+            const data = await resp.json();
+            if (data.message) {
+                alert('密码修改成功，请重新登录');
+                localStorage.removeItem('erudit_token');
+                location.reload();
+            } else {
+                alert(data.detail || '修改失败');
+            }
+        }
+        function logout() {
+            token = '';
+            localStorage.removeItem('erudit_token');
+            document.getElementById('loginSection').classList.remove('hidden');
+            document.getElementById('mainSection').classList.add('hidden');
+        }
+        const savedToken = localStorage.getItem('erudit_token');
+        if (savedToken) { token = savedToken; showMain(); }
+    </script>
+</body>
+</html>

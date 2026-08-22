@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Erudit - 知识管理系统</title>
+    <title>Erudit - 知识库</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; }
-        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .container { max-width: 900px; margin: 0 auto; padding: 20px; }
         .header { background: #2c3e50; color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
         .header h1 { font-size: 24px; }
         .login-form { background: white; padding: 30px; border-radius: 8px; max-width: 400px; margin: 50px auto; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
@@ -17,21 +17,19 @@
         .toolbar { background: white; padding: 15px; border-radius: 8px; margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap; }
         .toolbar button { padding: 8px 16px; background: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer; }
         .toolbar button:hover { background: #2980b9; }
-        .toolbar button.secondary { background: #95a5a6; }
-        .toolbar button.secondary:hover { background: #7f8c8d; }
         .content { display: grid; grid-template-columns: 1fr 2fr; gap: 20px; }
         .sidebar { background: white; padding: 20px; border-radius: 8px; height: fit-content; }
         .main { background: white; padding: 20px; border-radius: 8px; }
         .article-list { list-style: none; }
         .article-list li { padding: 10px; border-bottom: 1px solid #eee; cursor: pointer; }
         .article-list li:hover { background: #f8f9fa; }
-        .article-list li.active { background: #e3f2fd; }
         .form-group { margin-bottom: 15px; }
         .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
         .form-group input, .form-group textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; }
         .form-group textarea { min-height: 200px; }
         .stats { background: #ecf0f1; padding: 15px; border-radius: 4px; margin-bottom: 20px; }
         .hidden { display: none; }
+        .admin-link { margin-left: auto; }
     </style>
 </head>
 <body>
@@ -42,13 +40,14 @@
             <button onclick="login()">登录</button>
         </div>
         <div id="mainSection" class="hidden">
-            <div class="header"><h1>📚 Erudit 知识管理系统</h1></div>
+            <div class="header">
+                <h1>📚 Erudit 知识库</h1>
+                <a href="/admin" style="color:#3498db;text-decoration:none;margin-left:20px;">⚙️ 管理后台</a>
+            </div>
             <div class="toolbar">
-                <button onclick="showCreate()">+ 新建文章</button>
-                <button onclick="showBackup()">💾 备份</button>
+                <button onclick="showSearch()">🔍 搜索</button>
                 <button onclick="showRSS()">📡 RSS</button>
-                <button class="secondary" onclick="showChangePassword()">🔑 修改密码</button>
-                <button class="secondary" onclick="logout()">退出</button>
+                <button class="admin-link" onclick="location.href='/admin'">管理后台</button>
             </div>
             <div class="content">
                 <div class="sidebar">
@@ -60,7 +59,7 @@
                     <h3>文章列表</h3>
                     <ul class="article-list" id="articleList"></ul>
                 </div>
-                <div class="main" id="editor"><h2>选择文章或创建新文章</h2></div>
+                <div class="main" id="editor"><h2>选择文章阅读</h2><p style="color:#666;margin-top:20px;">从左侧列表选择文章，或搜索关键词</p></div>
             </div>
         </div>
     </div>
@@ -89,7 +88,6 @@
             articles = data.articles || [];
             document.getElementById('statArticles').textContent = data.total || articles.length;
             renderList();
-            // 加载分类统计
             loadCategories();
         }
         async function loadCategories() {
@@ -100,91 +98,47 @@
         }
         function renderList() {
             document.getElementById('articleList').innerHTML = articles.map(a =>
-                '<li onclick="loadArticle(\'' + a.slug + '\')">' + a.title + '</li>'
+                '<li onclick="loadArticle(\\'' + a.slug + '\\')">' + a.title + '</li>'
             ).join('');
         }
         async function loadArticle(slug) {
             const resp = await fetch('/api/articles/' + slug, { headers: { 'Authorization': 'Bearer ' + token } });
             const article = await resp.json();
             document.getElementById('editor').innerHTML =
-                '<h2>编辑: ' + article.title + '</h2>' +
-                '<div class="form-group"><label>标题</label><input type="text" id="editTitle" value="' + article.title + '"></div>' +
-                '<div class="form-group"><label>内容</label><textarea id="editContent">' + article.content.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</textarea></div>' +
-                '<button onclick="saveArticle(\'' + slug + '\')">保存</button>' +
-                '<button onclick="exportArticle(\'' + slug + '\')" style="margin-left:10px;">导出</button>' +
-                '<button onclick="deleteArticle(\'' + slug + '\')" style="margin-left:10px;background:#e74c3c;">删除</button>';
+                '<h2>' + article.title + '</h2>' +
+                '<div style="margin:20px 0;padding:15px;background:#f8f9fa;border-radius:4px;">' +
+                '<p><strong>分类:</strong> ' + (article.category_id || '未分类') + '</p>' +
+                '<p><strong>发布时间:</strong> ' + article.created_at + '</p>' +
+                '</div>' +
+                '<div style="line-height:1.8;">' + renderMarkdown(article.content) + '</div>';
         }
-        async function saveArticle(slug) {
-            await fetch('/api/articles/' + slug, {
-                method: 'PUT',
-                headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ title: document.getElementById('editTitle').value, content: document.getElementById('editContent').value })
+        function renderMarkdown(text) {
+            if (!text) return '';
+            return text
+                .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+                .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+                .replace(/^# (.+)$/gm, '<h1>$1</h1>')
+                .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.+?)\*/g, '<em>$1</em>')
+                .replace(/`(.+?)`/g, '<code>$1</code>')
+                .replace(/\n/g, '<br>');
+        }
+        function showSearch() {
+            const keyword = prompt('请输入搜索关键词:');
+            if (!keyword) return;
+            fetch('/api/search?keyword=' + encodeURIComponent(keyword), {
+                headers: { 'Authorization': 'Bearer ' + token }
+            })
+            .then(r => r.json())
+            .then(data => {
+                articles = data.articles || [];
+                document.getElementById('statArticles').textContent = data.total || articles.length;
+                renderList();
+                document.getElementById('editor').innerHTML = '<h2>搜索结果</h2><p>共找到 ' + (data.total || 0) + ' 篇相关文章</p>';
             });
-            alert('保存成功');
-            loadArticles();
-        }
-        async function deleteArticle(slug) {
-            if (!confirm('确定删除这篇文章？')) return;
-            await fetch('/api/articles/' + slug, { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + token } });
-            alert('删除成功');
-            loadArticles();
-        }
-        function exportArticle(slug) {
-            window.open('/api/exports/' + slug + '?format=markdown');
-        }
-        function showCreate() {
-            document.getElementById('editor').innerHTML =
-                '<h2>新建文章</h2>' +
-                '<div class="form-group"><label>标题</label><input type="text" id="newTitle"></div>' +
-                '<div class="form-group"><label>内容</label><textarea id="newContent"></textarea></div>' +
-                '<button onclick="createArticle()">创建</button>';
-        }
-        async function createArticle() {
-            const title = document.getElementById('newTitle').value;
-            const content = document.getElementById('newContent').value;
-            await fetch('/api/articles', {
-                method: 'POST',
-                headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ title: title, content: content })
-            });
-            alert('创建成功');
-            loadArticles();
-        }
-        function showBackup() {
-            if (confirm('创建备份？')) {
-                fetch('/api/backup', { method: 'POST', headers: { 'Authorization': 'Bearer ' + token } })
-                    .then(r => r.json()).then(d => alert('备份: ' + d.filename));
-            }
         }
         function showRSS() {
             window.open('/api/rss');
-        }
-        async function showChangePassword() {
-            const oldPwd = prompt('请输入旧密码:');
-            if (!oldPwd) return;
-            const newPwd = prompt('请输入新密码 (至少4位):');
-            if (!newPwd || newPwd.length < 4) { alert('新密码至少4位'); return; }
-            const confirmPwd = prompt('请确认新密码:');
-            if (newPwd !== confirmPwd) { alert('两次输入的密码不一致'); return; }
-            const resp = await fetch('/api/auth/change-password', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Authorization': 'Bearer ' + token },
-                body: 'old_password=' + encodeURIComponent(oldPwd) + '&new_password=' + encodeURIComponent(newPwd)
-            });
-            const data = await resp.json();
-            if (data.message) {
-                alert('密码修改成功，请重新登录');
-                localStorage.removeItem('erudit_token');
-                location.reload();
-            } else {
-                alert(data.detail || '修改失败');
-            }
-        }
-        function logout() {
-            token = '';
-            localStorage.removeItem('erudit_token');
-            document.getElementById('loginSection').classList.remove('hidden');
-            document.getElementById('mainSection').classList.add('hidden');
         }
         const savedToken = localStorage.getItem('erudit_token');
         if (savedToken) { token = savedToken; showMain(); }
