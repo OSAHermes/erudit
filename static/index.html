@@ -951,6 +951,7 @@
             try {
                 const res = await fetch('/stats');
                 const data = await res.json();
+                console.log('Stats response:', data);
                 document.getElementById('stat-articles').textContent = data.articles || 0;
                 document.getElementById('stat-categories').textContent = data.categories || 0;
                 document.getElementById('stat-tags').textContent = data.tags || 0;
