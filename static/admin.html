@@ -5,79 +5,579 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Erudit - 管理后台</title>
     <style>
+        /* Reset & Base */
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; }
-        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
-        .header { background: #2c3e50; color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
-        .header h1 { font-size: 24px; }
-        .header a { color: #3498db; text-decoration: none; }
-        .login-form { background: white; padding: 30px; border-radius: 8px; max-width: 400px; margin: 50px auto; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .login-form input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 4px; }
-        .login-form button { width: 100%; padding: 12px; background: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; }
-        .login-form button:hover { background: #2980b9; }
-        .toolbar { background: white; padding: 15px; border-radius: 8px; margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap; }
-        .toolbar button { padding: 8px 16px; background: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer; }
-        .toolbar button:hover { background: #2980b9; }
-        .toolbar button.secondary { background: #95a5a6; }
-        .toolbar button.secondary:hover { background: #7f8c8d; }
-        .toolbar button.danger { background: #e74c3c; }
-        .toolbar button.danger:hover { background: #c0392b; }
-        .content { display: grid; grid-template-columns: 250px 1fr; gap: 20px; }
-        .sidebar { background: white; padding: 20px; border-radius: 8px; height: fit-content; }
-        .main { background: white; padding: 20px; border-radius: 8px; }
-        .article-list { list-style: none; }
-        .article-list li { padding: 10px; border-bottom: 1px solid #eee; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
-        .article-list li:hover { background: #f8f9fa; }
-        .article-list li.active { background: #e3f2fd; }
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
-        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; }
-        .form-group textarea { min-height: 300px; font-family: monospace; }
-        .stats { background: #ecf0f1; padding: 15px; border-radius: 4px; margin-bottom: 20px; }
-        .hidden { display: none; }
-        .badge { background: #3498db; color: white; padding: 2px 8px; border-radius: 12px; font-size: 12px; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f0f2f5;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 页头 */
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        /* 导航栏 */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .navbar-brand {
+            font-size: 1.5rem;
+            font-weight: 700;
+            text-decoration: none;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .navbar-menu {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .navbar-btn {
+            padding: 0.5rem 1rem;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+            text-decoration: none;
+        }
+
+        .navbar-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .navbar-btn.primary {
+            background: white;
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .navbar-btn.primary:hover {
+            background: #f8f9fa;
+        }
+
+        /* 移动端菜单按钮 */
+        .menu-toggle {
+            display: none;
+            flex-direction: column;
+            gap: 5px;
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        .menu-toggle span {
+            width: 25px;
+            height: 3px;
+            background: white;
+            border-radius: 3px;
+            transition: 0.3s;
+        }
+
+        /* 主体 */
+        .main {
+            flex: 1;
+            max-width: 1400px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* 登录页面 */
+        .login-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 60vh;
+        }
+
+        .login-card {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .login-title {
+            text-align: center;
+            margin-bottom: 1.5rem;
+            color: #333;
+            font-size: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #555;
+            font-size: 0.9rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 2px solid #e1e4e8;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 0.875rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        /* 主界面 */
+        .content-layout {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 1.5rem;
+            align-items: start;
+        }
+
+        /* 侧边栏 */
+        .sidebar {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            position: sticky;
+            top: 1rem;
+        }
+
+        .sidebar-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .sidebar-title {
+            font-size: 0.85rem;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.75rem;
+            font-weight: 600;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .stat-item {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            opacity: 0.9;
+        }
+
+        .article-list {
+            list-style: none;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .article-item {
+            padding: 0.75rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-bottom: 0.25rem;
+        }
+
+        .article-item:hover {
+            background: #f5f7fa;
+        }
+
+        .article-item.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .article-item-title {
+            font-size: 0.9rem;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .article-item-meta {
+            font-size: 0.75rem;
+            opacity: 0.7;
+            margin-top: 0.25rem;
+        }
+
+        /* 内容区 */
+        .content-panel {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            min-height: 400px;
+        }
+
+        .content-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #f0f2f5;
+        }
+
+        .content-title {
+            font-size: 1.25rem;
+            color: #333;
+        }
+
+        .content-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-sm {
+            padding: 0.5rem 1rem;
+            font-size: 0.85rem;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+        }
+
+        .btn-secondary {
+            background: #f0f2f5;
+            color: #555;
+        }
+
+        .btn-secondary:hover {
+            background: #e4e6eb;
+        }
+
+        .btn-danger {
+            background: #ff4757;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #ff3344;
+        }
+
+        /* 文章编辑 */
+        .editor-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .editor-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #555;
+            font-weight: 500;
+        }
+
+        .editor-input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 2px solid #e1e4e8;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        .editor-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .editor-textarea {
+            width: 100%;
+            min-height: 300px;
+            padding: 1rem;
+            border: 2px solid #e1e4e8;
+            border-radius: 8px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            resize: vertical;
+        }
+
+        .editor-textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        /* 空状态 */
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: #888;
+        }
+
+        .empty-state-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        /* 页脚 */
+        .footer {
+            background: #2c3e50;
+            color: #bdc3c7;
+            padding: 1.5rem 2rem;
+            margin-top: auto;
+        }
+
+        .footer-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .footer-link {
+            color: #bdc3c7;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+        }
+
+        .footer-link:hover {
+            color: white;
+        }
+
+        .footer-copyright {
+            font-size: 0.85rem;
+            opacity: 0.8;
+        }
+
+        /* 移动端适配 */
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 1rem;
+            }
+
+            .menu-toggle {
+                display: flex;
+            }
+
+            .navbar-menu {
+                position: fixed;
+                top: 60px;
+                left: 0;
+                right: 0;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                flex-direction: column;
+                padding: 1rem;
+                gap: 0.5rem;
+                transform: translateY(-150%);
+                transition: transform 0.3s;
+                box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            }
+
+            .navbar-menu.active {
+                transform: translateY(0);
+            }
+
+            .navbar-btn {
+                width: 100%;
+                text-align: center;
+            }
+
+            .main {
+                padding: 1rem;
+            }
+
+            .content-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                position: static;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .content-header {
+                flex-direction: column;
+                gap: 0.5rem;
+                align-items: flex-start;
+            }
+
+            .footer-content {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div id="loginSection" class="login-form">
-            <h2 style="text-align:center;margin-bottom:20px;">Erudit 管理后台</h2>
-            <input type="password" id="password" placeholder="输入密码">
-            <button onclick="login()">登录</button>
-        </div>
-        <div id="mainSection" class="hidden">
-            <div class="header">
-                <h1>⚙️ Erudit 管理后台</h1>
-                <div>
-                    <a href="/" style="margin-right:15px;">📖 返回前台</a>
-                    <button onclick="logout()" style="padding:5px 15px;background:#e74c3c;color:white;border:none;border-radius:4px;cursor:pointer;">退出</button>
+    <!-- 页头 -->
+    <header class="header">
+        <nav class="navbar">
+            <a href="/admin" class="navbar-brand">
+                ⚙️ Erudit 管理后台
+            </a>
+            <div class="menu-toggle" onclick="toggleMenu()">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+            <div class="navbar-menu" id="navMenu">
+                <button class="navbar-btn primary" onclick="showCreate()">+ 新建文章</button>
+                <button class="navbar-btn" onclick="showBackup()">💾 备份</button>
+                <button class="navbar-btn" onclick="showCleanup()">🗑️ 清理</button>
+                <button class="navbar-btn" onclick="showRSS()">📡 RSS</button>
+                <button class="navbar-btn" onclick="showChangePassword()">🔑 修改密码</button>
+                <button class="navbar-btn" onclick="location.href='/'">📖 返回前台</button>
+            </div>
+        </nav>
+    </header>
+
+    <!-- 主体 -->
+    <main class="main">
+        <!-- 登录页 -->
+        <div id="loginSection" class="login-wrapper">
+            <div class="login-card">
+                <h2 class="login-title">⚙️ Erudit 管理后台</h2>
+                <div class="form-group">
+                    <label>密码</label>
+                    <input type="password" id="password" class="form-input" placeholder="请输入密码" onkeypress="if(event.key==='Enter') login()">
                 </div>
+                <button class="btn" onclick="login()">登录</button>
             </div>
-            <div class="toolbar">
-                <button onclick="showCreate()">+ 新建文章</button>
-                <button onclick="showBackup()">💾 备份</button>
-                <button onclick="showCleanup()">🗑️ 清理</button>
-                <button onclick="showRSS()">📡 RSS</button>
-                <button onclick="showChangePassword()">🔑 修改密码</button>
-                <button class="secondary" onclick="location.href='/api/docs'">📚 API 文档</button>
-            </div>
-            <div class="content">
-                <div class="sidebar">
-                    <div class="stats">
-                        <div><strong>统计</strong></div>
-                        <div>文章: <span id="statArticles">0</span></div>
-                        <div>分类: <span id="statCategories">0</span></div>
-                        <div>版本: 3.0.0</div>
+        </div>
+
+        <!-- 主界面 -->
+        <div id="mainSection" class="content-layout hidden">
+            <!-- 侧边栏 -->
+            <aside class="sidebar">
+                <div class="sidebar-section">
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-number" id="statArticles">0</div>
+                            <div class="stat-label">文章</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number" id="statCategories">0</div>
+                            <div class="stat-label">分类</div>
+                        </div>
                     </div>
-                    <h3>文章列表</h3>
+                </div>
+                <div class="sidebar-section">
+                    <div class="sidebar-title">文章列表</div>
                     <ul class="article-list" id="articleList"></ul>
                 </div>
-                <div class="main" id="editor"><h2>选择文章或创建新文章</h2></div>
+            </aside>
+
+            <!-- 内容区 -->
+            <div class="content-panel" id="contentPanel">
+                <div class="empty-state">
+                    <div class="empty-state-icon">📝</div>
+                    <h3>管理后台</h3>
+                    <p style="margin-top: 0.5rem; color: #888;">选择文章进行编辑，或创建新文章</p>
+                </div>
             </div>
         </div>
-    </div>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-links">
+                <a href="/" class="footer-link">前台首页</a>
+                <a href="/api/docs" class="footer-link">API 文档</a>
+                <a href="https://github.com/trencps/erudit" class="footer-link" target="_blank">GitHub</a>
+            </div>
+            <div class="footer-copyright">
+                © 2026 Erudit - 个人知识管理系统
+            </div>
+        </div>
+    </footer>
+
     <script>
         let token = '', articles = [], categories = [];
+
+        // 移动端菜单
+        function toggleMenu() {
+            document.getElementById('navMenu').classList.toggle('active');
+        }
+
+        // 登录
         async function login() {
             const password = document.getElementById('password').value;
             if (!password) { alert('请输入密码'); return; }
@@ -89,11 +589,15 @@
                 showMain();
             } else { alert(data.detail || '密码错误'); }
         }
+
+        // 显示主界面
         function showMain() {
             document.getElementById('loginSection').classList.add('hidden');
             document.getElementById('mainSection').classList.remove('hidden');
             loadArticles();
         }
+
+        // 加载文章
         async function loadArticles() {
             if (!token) return;
             const resp = await fetch('/api/articles?page=1&page_size=50', { headers: { 'Authorization': 'Bearer ' + token } });
@@ -103,102 +607,183 @@
             renderList();
             await loadCategories();
         }
+
+        // 加载分类
         async function loadCategories() {
             if (!token) return;
             const resp = await fetch('/api/categories', { headers: { 'Authorization': 'Bearer ' + token } });
             categories = await resp.json();
             document.getElementById('statCategories').textContent = categories.length || 0;
         }
+
+        // 渲染列表
         function renderList() {
             document.getElementById('articleList').innerHTML = articles.map(a =>
-                '<li onclick="loadArticle(\\'' + a.slug + '\\')"><span>' + a.title + '</span><span class="badge">' + (a.category_id || '未分类') + '</span></li>'
+                '<li class="article-item" onclick="loadArticle(\\'' + a.slug + '\\')">' +
+                '<div class="article-item-title">' + escapeHtml(a.title) + '</div>' +
+                '<div class="article-item-meta">' + (a.category_id || '未分类') + '</div>' +
+                '</li>'
             ).join('');
         }
+
+        // 加载文章
         async function loadArticle(slug) {
+            document.querySelectorAll('.article-item').forEach(el => el.classList.remove('active'));
+            event.target.closest('.article-item').classList.add('active');
+
             const resp = await fetch('/api/articles/' + slug, { headers: { 'Authorization': 'Bearer ' + token } });
             const article = await resp.json();
-            document.getElementById('editor').innerHTML =
-                '<h2>编辑: ' + article.title + '</h2>' +
-                '<div class="form-group"><label>标题</label><input type="text" id="editTitle" value="' + escapeHtml(article.title) + '"></div>' +
-                '<div class="form-group"><label>分类</label><select id="editCategory"><option value="">无分类</option>' +
-                categories.map(c => '<option value="' + c.id + '">' + c.name + '</option>').join('') + '</select></div>' +
-                '<div class="form-group"><label>内容 (Markdown)</label><textarea id="editContent">' + escapeHtml(article.content) + '</textarea></div>' +
-                '<button onclick="saveArticle(\\'' + slug + '\\')">保存</button> ' +
-                '<button onclick="exportArticle(\\'' + slug + '\\')" style="margin-left:10px;">导出</button> ' +
-                '<button onclick="deleteArticle(\\'' + slug + '\\')" style="margin-left:10px;background:#e74c3c;">删除</button>' +
-                '<div style="margin-top:20px;padding:15px;background:#f8f9fa;border-radius:4px;">' +
-                '<p><strong>发布时间:</strong> ' + article.created_at + '</p>' +
-                '<p><strong>更新时间:</strong> ' + article.updated_at + '</p>' +
-                '</div>';
+
+            document.getElementById('contentPanel').innerHTML = `
+                <div class="content-header">
+                    <h2 class="content-title">${escapeHtml(article.title)}</h2>
+                    <div class="content-actions">
+                        <button class="btn-sm btn-secondary" onclick="exportArticle('${slug}')">📥 导出</button>
+                        <button class="btn-sm btn-danger" onclick="deleteArticle('${slug}')">🗑️ 删除</button>
+                    </div>
+                </div>
+                <div class="editor-group">
+                    <label class="editor-label">标题</label>
+                    <input type="text" class="editor-input" id="editTitle" value="${escapeHtml(article.title)}">
+                </div>
+                <div class="editor-group">
+                    <label class="editor-label">分类</label>
+                    <select class="editor-input" id="editCategory">
+                        <option value="">无分类</option>
+                        ${categories.map(c => `<option value="${c.id}" ${article.category_id == c.id ? 'selected' : ''}>${c.name}</option>`).join('')}
+                    </select>
+                </div>
+                <div class="editor-group">
+                    <label class="editor-label">内容 (Markdown)</label>
+                    <textarea class="editor-textarea" id="editContent">${escapeHtml(article.content)}</textarea>
+                </div>
+                <div class="content-actions">
+                    <button class="btn-sm btn-primary" onclick="saveArticle('${slug}')">保存</button>
+                </div>
+                <div style="margin-top: 1rem; padding: 1rem; background: #f8f9fa; border-radius: 8px;">
+                    <p><strong>发布时间:</strong> ${article.created_at}</p>
+                    <p><strong>更新时间:</strong> ${article.updated_at}</p>
+                </div>
+            `;
         }
-        function escapeHtml(text) {
-            if (!text) return '';
-            return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-        }
+
+        // 保存文章
         async function saveArticle(slug) {
             const title = document.getElementById('editTitle').value;
             const content = document.getElementById('editContent').value;
             const category_id = document.getElementById('editCategory').value;
+
             await fetch('/api/articles/' + slug, {
                 method: 'PUT',
                 headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ title: title, content: content, category_id: category_id || null })
+                body: JSON.stringify({ title, content, category_id: category_id || null })
             });
+
             alert('保存成功');
             loadArticles();
         }
+
+        // 删除文章
         async function deleteArticle(slug) {
             if (!confirm('确定删除这篇文章？此操作不可恢复。')) return;
             await fetch('/api/articles/' + slug, { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + token } });
             alert('删除成功');
             loadArticles();
         }
+
+        // 导出文章
         function exportArticle(slug) {
             window.open('/api/exports/' + slug + '?format=markdown');
         }
+
+        // 创建文章
         function showCreate() {
-            document.getElementById('editor').innerHTML =
-                '<h2>新建文章</h2>' +
-                '<div class="form-group"><label>标题</label><input type="text" id="newTitle"></div>' +
-                '<div class="form-group"><label>分类</label><select id="newCategory"><option value="">无分类</option>' +
-                categories.map(c => '<option value="' + c.id + '">' + c.name + '</option>').join('') + '</select></div>' +
-                '<div class="form-group"><label>内容 (Markdown)</label><textarea id="newContent" placeholder="# 标题
+            document.getElementById('contentPanel').innerHTML = `
+                <div class="content-header">
+                    <h2 class="content-title">新建文章</h2>
+                    <div class="content-actions">
+                        <button class="btn-sm btn-secondary" onclick="showWelcome()">取消</button>
+                        <button class="btn-sm btn-primary" onclick="createArticle()">创建</button>
+                    </div>
+                </div>
+                <div class="editor-group">
+                    <label class="editor-label">标题</label>
+                    <input type="text" class="editor-input" id="newTitle" placeholder="请输入文章标题">
+                </div>
+                <div class="editor-group">
+                    <label class="editor-label">分类</label>
+                    <select class="editor-input" id="newCategory">
+                        <option value="">无分类</option>
+                        ${categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('')}
+                    </select>
+                </div>
+                <div class="editor-group">
+                    <label class="editor-label">内容 (Markdown)</label>
+                    <textarea class="editor-textarea" id="newContent" placeholder="# 标题
 
 ## 章节
 
-内容..."></textarea></div>' +
-                '<div class="form-group"><label>标签 (逗号分隔)</label><input type="text" id="newTags" placeholder="docker, fastapi, 教程"></div>' +
-                '<button onclick="createArticle()">创建</button>';
+内容..."></textarea>
+                </div>
+                <div class="editor-group">
+                    <label class="editor-label">标签 (逗号分隔)</label>
+                    <input type="text" class="editor-input" id="newTags" placeholder="docker, fastapi, 教程">
+                </div>
+            `;
         }
+
+        // 创建文章
         async function createArticle() {
             const title = document.getElementById('newTitle').value;
             const content = document.getElementById('newContent').value;
             const category_id = document.getElementById('newCategory').value;
             const tags = document.getElementById('newTags').value.split(',').map(t => t.trim()).filter(t => t);
+
             if (!title || !content) { alert('标题和内容不能为空'); return; }
+
             await fetch('/api/articles', {
                 method: 'POST',
                 headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ title: title, content: content, category_id: category_id || null, tags: tags })
+                body: JSON.stringify({ title, content, category_id: category_id || null, tags })
             });
+
             alert('创建成功');
             loadArticles();
         }
+
+        // 显示欢迎
+        function showWelcome() {
+            document.getElementById('contentPanel').innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">📝</div>
+                    <h3>管理后台</h3>
+                    <p style="margin-top: 0.5rem; color: #888;">选择文章进行编辑，或创建新文章</p>
+                </div>
+            `;
+        }
+
+        // 备份
         function showBackup() {
             if (confirm('创建备份？')) {
                 fetch('/api/backup', { method: 'POST', headers: { 'Authorization': 'Bearer ' + token } })
                     .then(r => r.json()).then(d => alert('备份: ' + d.filename));
             }
         }
+
+        // 清理
         function showCleanup() {
             if (confirm('清理超过 7 天的旧备份？')) {
                 fetch('/api/backup/cleanup', { method: 'POST', headers: { 'Authorization': 'Bearer ' + token } })
                     .then(r => r.json()).then(d => alert(d.message || '清理完成'));
             }
         }
+
+        // RSS
         function showRSS() {
             window.open('/api/rss');
         }
+
+        // 修改密码
         async function showChangePassword() {
             const oldPwd = prompt('请输入旧密码:');
             if (!oldPwd) return;
@@ -206,6 +791,7 @@
             if (!newPwd || newPwd.length < 4) { alert('新密码至少4位'); return; }
             const confirmPwd = prompt('请确认新密码:');
             if (newPwd !== confirmPwd) { alert('两次输入的密码不一致'); return; }
+
             const resp = await fetch('/api/auth/change-password', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Authorization': 'Bearer ' + token },
@@ -220,14 +806,30 @@
                 alert(data.detail || '修改失败');
             }
         }
+
+        // 退出登录
         function logout() {
             token = '';
             localStorage.removeItem('erudit_token');
-            document.getElementById('loginSection').classList.remove('hidden');
-            document.getElementById('mainSection').classList.add('hidden');
+            location.reload();
         }
+
+        // 工具函数
+        function escapeHtml(text) {
+            if (!text) return '';
+            return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+
+        // 初始化
         const savedToken = localStorage.getItem('erudit_token');
         if (savedToken) { token = savedToken; showMain(); }
+
+        // 点击外部关闭菜单
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.navbar')) {
+                document.getElementById('navMenu').classList.remove('active');
+            }
+        });
     </script>
 </body>
 </html>
