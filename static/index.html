@@ -5,27 +5,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Erudit - 个人知识库</title>
     <style>
-        /* ========== 主题变量 ========== */
+        /* ========== 浅色主题 ========== */
         :root[data-theme="light"] {
             --bg-primary: #f0f2f5;
             --bg-secondary: #ffffff;
             --bg-sidebar: #ffffff;
             --text-primary: #1a1a2e;
             --text-secondary: #4a4a6a;
-            --text-muted: #8888a8;
-            --border-color: #e1e4e8;
+            --text-muted: #8888aa;
+            --border-color: #e0e0e8;
             --accent-primary: #667eea;
             --accent-secondary: #764ba2;
             --accent-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            --hover-bg: #f5f7fa;
-            --shadow-sm: 0 2px 8px rgba(0,0,0,0.04);
-            --shadow-md: 0 4px 20px rgba(0,0,0,0.08);
-            --shadow-lg: 0 10px 40px rgba(0,0,0,0.12);
-            --code-bg: #f6f8fa;
-            --tag-bg: #e3f2fd;
-            --tag-text: #1976d2;
+            --accent-glow: 0 4px 20px rgba(102, 126, 234, 0.3);
+            --hover-bg: rgba(102, 126, 234, 0.08);
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
+            --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.08);
+            --shadow-lg: 0 10px 40px rgba(0, 0, 0, 0.12);
+            --code-bg: #f5f5f7;
+            --tag-bg: rgba(102, 126, 234, 0.1);
+            --tag-text: #667eea;
         }
 
+        /* ========== 深色主题 ========== */
         :root[data-theme="dark"] {
             --bg-primary: #0d1117;
             --bg-secondary: #161b22;
@@ -37,13 +39,14 @@
             --accent-primary: #7c8aff;
             --accent-secondary: #a855f7;
             --accent-gradient: linear-gradient(135deg, #7c8aff 0%, #a855f7 100%);
-            --hover-bg: #1f2937;
-            --shadow-sm: 0 2px 8px rgba(0,0,0,0.3);
-            --shadow-md: 0 4px 20px rgba(0,0,0,0.4);
-            --shadow-lg: 0 10px 40px rgba(0,0,0,0.5);
-            --code-bg: #1f2937;
-            --tag-bg: #1e3a5f;
-            --tag-text: #79c0ff;
+            --accent-glow: 0 4px 20px rgba(124, 138, 255, 0.4);
+            --hover-bg: rgba(124, 138, 255, 0.1);
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+            --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.4);
+            --shadow-lg: 0 10px 40px rgba(0, 0, 0, 0.5);
+            --code-bg: #1a1f26;
+            --tag-bg: rgba(124, 138, 255, 0.15);
+            --tag-text: #7c8aff;
         }
 
         /* ========== 赛博朋克主题 ========== */
@@ -69,6 +72,20 @@
             --tag-text: #00f0ff;
         }
 
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            transition: background 0.3s, color 0.3s;
+        }
+
         [data-theme="cyberpunk"] body {
             background: var(--bg-primary);
             background-image: 
@@ -76,10 +93,35 @@
                 linear-gradient(180deg, rgba(0, 240, 255, 0.02) 0%, transparent 50%, rgba(255, 0, 170, 0.02) 100%);
         }
 
+        /* ========== 页头 ========== */
+        .header {
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            padding: 0 24px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: var(--shadow-sm);
+            transition: all 0.3s;
+        }
+
         [data-theme="cyberpunk"] .header {
             background: linear-gradient(180deg, #0a0a15 0%, #12121a 100%);
             border-bottom: 1px solid var(--accent-primary);
             box-shadow: var(--accent-glow);
+        }
+
+        .navbar-brand {
+            font-size: 24px;
+            font-weight: 700;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
         }
 
         [data-theme="cyberpunk"] .navbar-brand {
@@ -89,285 +131,204 @@
             text-shadow: var(--accent-glow);
         }
 
-        [data-theme="cyberpunk"] .navbar-btn {
-            background: transparent;
-            border: 1px solid var(--accent-primary);
-            color: var(--accent-primary);
-            font-family: 'Courier New', monospace;
-            text-transform: uppercase;
+        .navbar-nav {
+            display: flex;
+            gap: 8px;
+            align-items: center;
         }
 
-        [data-theme="cyberpunk"] .navbar-btn:hover {
-            background: rgba(0, 240, 255, 0.1);
+        .nav-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 8px;
+            background: transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .nav-btn:hover {
+            background: var(--hover-bg);
+            color: var(--accent-primary);
+        }
+
+        .nav-btn.primary {
+            background: var(--accent-gradient);
+            color: white;
+        }
+
+        .nav-btn.primary:hover {
+            opacity: 0.9;
             box-shadow: var(--accent-glow);
         }
 
-        [data-theme="cyberpunk"] .navbar-btn.primary {
-            background: var(--accent-primary);
-            color: #0a0a0f;
-            font-weight: 700;
+        /* ========== 主体布局 ========== */
+        .main {
+            display: flex;
+            min-height: calc(100vh - 64px);
+        }
+
+        /* ========== 侧边栏 ========== */
+        .sidebar {
+            width: 280px;
+            background: var(--bg-sidebar);
+            border-right: 1px solid var(--border-color);
+            padding: 24px 16px;
+            overflow-y: auto;
+            transition: all 0.3s;
         }
 
         [data-theme="cyberpunk"] .sidebar {
-            border-left: 2px solid var(--accent-primary);
-            box-shadow: var(--shadow-md);
+            background: var(--bg-sidebar);
+            border-right: 1px solid var(--border-color);
+            box-shadow: inset -1px 0 20px rgba(0, 240, 255, 0.05);
         }
 
-        [data-theme="cyberpunk"] .stat-item {
-            background: linear-gradient(135deg, rgba(0, 240, 255, 0.1) 0%, rgba(10, 10, 15, 0.9) 50%, rgba(255, 0, 170, 0.1) 100%);
-            border: 1px solid var(--accent-primary);
+        .stats-panel {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .stat-item:last-child {
+            border-bottom: none;
+        }
+
+        .stat-label {
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        .stat-number {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--accent-primary);
         }
 
         [data-theme="cyberpunk"] .stat-number {
-            font-family: 'Courier New', monospace;
-            color: var(--accent-primary);
             text-shadow: var(--accent-glow);
         }
 
+        .section-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin: 20px 0 12px 8px;
+        }
+
+        .article-list {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .article-item {
+            padding: 12px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: var(--text-secondary);
+        }
+
+        .article-item:hover {
+            background: var(--hover-bg);
+            color: var(--accent-primary);
+        }
+
+        .article-item.active {
+            background: var(--hover-bg);
+            color: var(--accent-primary);
+            font-weight: 600;
+        }
+
         [data-theme="cyberpunk"] .article-item {
-            border-color: var(--border-color);
+            border-left: 2px solid transparent;
         }
 
         [data-theme="cyberpunk"] .article-item:hover,
         [data-theme="cyberpunk"] .article-item.active {
-            border-color: var(--accent-primary);
+            border-left-color: var(--accent-primary);
             background: var(--hover-bg);
         }
 
-        [data-theme="cyberpunk"] .form-input,
-        [data-theme="cyberpunk"] .editor-input,
-        [data-theme="cyberpunk"] .editor-textarea {
-            background: var(--code-bg);
-            border-color: var(--border-color);
-            font-family: 'Courier New', monospace;
+        .article-title {
+            font-size: 14px;
+            margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
-        [data-theme="cyberpunk"] .form-input:focus,
-        [data-theme="cyberpunk"] .editor-input:focus,
-        [data-theme="cyberpunk"] .editor-textarea:focus {
-            border-color: var(--accent-primary);
-            box-shadow: 0 0 15px rgba(0, 240, 255, 0.3);
+        .article-meta {
+            font-size: 12px;
+            color: var(--text-muted);
         }
 
-        [data-theme="cyberpunk"] .btn {
-            font-family: 'Courier New', monospace;
-            text-transform: uppercase;
+        /* ========== 内容区 ========== */
+        .content {
+            flex: 1;
+            padding: 32px;
+            overflow-y: auto;
         }
 
-        [data-theme="cyberpunk"] .btn-primary {
-            background: transparent;
-            border: 1px solid var(--accent-primary);
-            color: var(--accent-primary);
-        }
-
-        [data-theme="cyberpunk"] .btn-primary:hover {
-            background: var(--accent-primary);
-            color: #0a0a0f;
-            box-shadow: var(--accent-glow-strong);
+        .login-card {
+            max-width: 400px;
+            margin: 60px auto;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: var(--shadow-lg);
         }
 
         [data-theme="cyberpunk"] .login-card {
             border: 1px solid var(--accent-primary);
-            box-shadow: var(--shadow-lg), var(--accent-glow);
-        }
-
-        [data-theme="cyberpunk"] .theme-toggle {
-            background: rgba(0, 240, 255, 0.2);
-            border: 1px solid var(--accent-primary);
-        }
-
-        [data-theme="cyberpunk"] .theme-toggle::before {
-            background: var(--accent-primary);
-            box-shadow: 0 0 10px var(--accent-primary);
-        }
-
-        [data-theme="cyberpunk"] ::-webkit-scrollbar-thumb {
-            background: var(--accent-primary);
-        }
-
-        /* ========== 基础样式 ========== */
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background: var(--bg-primary);
-            color: var(--text-primary);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            transition: background 0.3s, color 0.3s;
-        }
-
-        /* ========== 页头 ========== */
-        .header {
-            background: var(--accent-gradient);
-            color: white;
-            box-shadow: var(--shadow-md);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-
-        .navbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 1rem 2rem;
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-
-        .navbar-brand {
-            font-size: 1.5rem;
-            font-weight: 700;
-            text-decoration: none;
-            color: white;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .navbar-menu {
-            display: flex;
-            gap: 0.75rem;
-            align-items: center;
-        }
-
-        .navbar-btn {
-            padding: 0.5rem 1rem;
-            background: rgba(255,255,255,0.15);
-            color: white;
-            border: 1px solid rgba(255,255,255,0.2);
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 0.875rem;
-            transition: all 0.2s;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 0.4rem;
-        }
-
-        .navbar-btn:hover {
-            background: rgba(255,255,255,0.25);
-            transform: translateY(-1px);
-        }
-
-        .navbar-btn.primary {
-            background: white;
-            color: var(--accent-primary);
-            font-weight: 600;
-            border: none;
-        }
-
-        .navbar-btn.primary:hover {
-            background: #f8f9fa;
-        }
-
-        /* 主题切换按钮 */
-        .theme-toggle {
-            width: 44px;
-            height: 24px;
-            background: rgba(255,255,255,0.3);
-            border-radius: 12px;
-            position: relative;
-            cursor: pointer;
-            transition: background 0.3s;
-            border: none;
-        }
-
-        .theme-toggle::before {
-            content: '';
-            position: absolute;
-            width: 18px;
-            height: 18px;
-            background: white;
-            border-radius: 50%;
-            top: 3px;
-            left: 3px;
-            transition: transform 0.3s;
-        }
-
-        [data-theme="dark"] .theme-toggle::before {
-            transform: translateX(20px);
-        }
-
-        .theme-icon {
-            font-size: 0.75rem;
-            margin: 0 4px;
-        }
-
-        /* 移动端菜单 */
-        .menu-toggle {
-            display: none;
-            flex-direction: column;
-            gap: 5px;
-            cursor: pointer;
-            padding: 5px;
-            background: none;
-            border: none;
-        }
-
-        .menu-toggle span {
-            width: 25px;
-            height: 3px;
-            background: white;
-            border-radius: 3px;
-            transition: 0.3s;
-        }
-
-        /* ========== 主体 ========== */
-        .main {
-            flex: 1;
-            max-width: 1400px;
-            width: 100%;
-            margin: 0 auto;
-            padding: 2rem;
-        }
-
-        /* ========== 登录页 ========== */
-        .login-wrapper {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 60vh;
-        }
-
-        .login-card {
-            background: var(--bg-secondary);
-            padding: 2.5rem;
-            border-radius: 16px;
-            box-shadow: var(--shadow-lg);
-            width: 100%;
-            max-width: 400px;
-            border: 1px solid var(--border-color);
+            box-shadow: var(--accent-glow-strong);
         }
 
         .login-title {
+            font-size: 24px;
+            font-weight: 700;
             text-align: center;
-            margin-bottom: 1.5rem;
+            margin-bottom: 24px;
             color: var(--text-primary);
-            font-size: 1.5rem;
         }
 
-        .form-group { margin-bottom: 1.25rem; }
+        .form-group {
+            margin-bottom: 20px;
+        }
 
         .form-label {
             display: block;
-            margin-bottom: 0.5rem;
+            font-size: 14px;
             color: var(--text-secondary);
-            font-size: 0.9rem;
-            font-weight: 500;
+            margin-bottom: 8px;
         }
 
         .form-input {
             width: 100%;
-            padding: 0.875rem 1rem;
-            border: 2px solid var(--border-color);
-            border-radius: 10px;
-            font-size: 1rem;
+            padding: 12px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
             background: var(--bg-primary);
             color: var(--text-primary);
-            transition: border-color 0.3s, box-shadow 0.3s;
+            font-size: 16px;
+            transition: all 0.2s;
         }
 
         .form-input:focus {
@@ -376,485 +337,770 @@
             box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
 
+        .form-input::placeholder {
+            color: var(--text-muted);
+        }
+
         .btn {
             width: 100%;
-            padding: 1rem;
+            padding: 14px 24px;
+            border: none;
+            border-radius: 8px;
             background: var(--accent-gradient);
             color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 1rem;
+            font-size: 16px;
             font-weight: 600;
             cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: all 0.2s;
         }
 
         .btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+            box-shadow: var(--accent-glow);
         }
 
-        .btn:active { transform: translateY(0); }
-
-        /* ========== 主界面 ========== */
-        .content-layout {
-            display: grid;
-            grid-template-columns: 280px 1fr;
-            gap: 1.5rem;
-            align-items: start;
+        .btn:active {
+            transform: translateY(0);
         }
 
-        /* ========== 侧边栏 ========== */
-        .sidebar {
-            background: var(--bg-sidebar);
-            border-radius: 16px;
-            padding: 1.5rem;
-            box-shadow: var(--shadow-sm);
-            position: sticky;
-            top: 1rem;
-            border: 1px solid var(--border-color);
+        .error-msg {
+            color: #ef4444;
+            font-size: 14px;
+            margin-top: 12px;
+            text-align: center;
         }
 
-        .sidebar-section { margin-bottom: 1.5rem; }
+        .article-view {
+            max-width: 800px;
+        }
 
-        .sidebar-title {
-            font-size: 0.8rem;
+        .article-header {
+            margin-bottom: 32px;
+        }
+
+        .article-title-main {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            line-height: 1.2;
+        }
+
+        .article-meta {
+            display: flex;
+            gap: 16px;
             color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 0.75rem;
+            font-size: 14px;
+        }
+
+        .article-content {
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-secondary);
+        }
+
+        .article-content h1, .article-content h2, .article-content h3 {
+            margin: 32px 0 16px;
+            color: var(--text-primary);
+        }
+
+        .article-content p {
+            margin-bottom: 16px;
+        }
+
+        .article-content code {
+            background: var(--code-bg);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 14px;
+        }
+
+        .article-content pre {
+            background: var(--code-bg);
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 16px 0;
+        }
+
+        .article-content pre code {
+            background: none;
+            padding: 0;
+        }
+
+        .article-content blockquote {
+            border-left: 4px solid var(--accent-primary);
+            padding-left: 20px;
+            margin: 16px 0;
+            color: var(--text-muted);
+        }
+
+        .article-content img {
+            max-width: 100%;
+            border-radius: 8px;
+            box-shadow: var(--shadow-md);
+        }
+
+        .article-content a {
+            color: var(--accent-primary);
+            text-decoration: none;
+        }
+
+        .article-content a:hover {
+            text-decoration: underline;
+        }
+
+        .article-content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0;
+        }
+
+        .article-content th, .article-content td {
+            border: 1px solid var(--border-color);
+            padding: 12px;
+            text-align: left;
+        }
+
+        .article-content th {
+            background: var(--code-bg);
             font-weight: 600;
         }
 
-        .stats-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 0.75rem;
+        .article-content ul, .article-content ol {
+            padding-left: 24px;
+            margin: 16px 0;
         }
 
-        .stat-item {
+        .article-content li {
+            margin: 8px 0;
+        }
+
+        /* ========== 右下角管理面板 ========== */
+        .admin-panel {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 1000;
+        }
+
+        .admin-toggle {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
             background: var(--accent-gradient);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--accent-glow-strong);
+            transition: all 0.3s;
             color: white;
-            padding: 1.25rem;
-            border-radius: 12px;
-            text-align: center;
-            box-shadow: var(--shadow-sm);
+            font-size: 24px;
         }
 
-        .stat-number {
-            font-size: 1.75rem;
-            font-weight: 700;
+        .admin-toggle:hover {
+            transform: scale(1.1);
         }
 
-        .stat-label {
-            font-size: 0.75rem;
-            opacity: 0.9;
-            margin-top: 0.25rem;
+        .admin-toggle.active {
+            transform: rotate(45deg);
         }
 
-        .article-list {
-            list-style: none;
-            max-height: 400px;
-            overflow-y: auto;
+        [data-theme="cyberpunk"] .admin-toggle {
+            box-shadow: var(--accent-glow-strong);
+            border: 1px solid var(--accent-primary);
         }
 
-        .article-item {
-            padding: 0.875rem;
-            border-radius: 10px;
+        .admin-menu {
+            position: absolute;
+            bottom: 70px;
+            right: 0;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 16px;
+            min-width: 280px;
+            box-shadow: var(--shadow-lg);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(20px);
+            transition: all 0.3s;
+        }
+
+        .admin-menu.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        [data-theme="cyberpunk"] .admin-menu {
+            border: 1px solid var(--accent-primary);
+            box-shadow: var(--accent-glow-strong);
+        }
+
+        .menu-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            border-radius: 8px;
             cursor: pointer;
             transition: all 0.2s;
-            margin-bottom: 0.25rem;
-            border: 1px solid transparent;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
         }
 
-        .article-item:hover {
+        .menu-item:hover {
             background: var(--hover-bg);
-            border-color: var(--border-color);
+            color: var(--accent-primary);
         }
 
-        .article-item.active {
-            background: var(--accent-gradient);
-            color: white;
-            border-color: transparent;
+        .menu-item-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: var(--code-bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
         }
 
-        .article-item-title {
-            font-size: 0.9rem;
+        .menu-item-content {
+            flex: 1;
+        }
+
+        .menu-item-title {
+            font-size: 14px;
             font-weight: 500;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
         }
 
-        .article-item-meta {
-            font-size: 0.75rem;
-            opacity: 0.7;
-            margin-top: 0.25rem;
+        .menu-item-desc {
+            font-size: 12px;
+            color: var(--text-muted);
         }
 
-        /* ========== 内容区 ========== */
-        .content-panel {
+        /* ========== 主题选择器 ========== */
+        .theme-selector {
+            display: flex;
+            gap: 8px;
+            padding: 12px;
+            background: var(--code-bg);
+            border-radius: 8px;
+            margin-top: 8px;
+        }
+
+        .theme-btn {
+            flex: 1;
+            padding: 8px;
+            border: 2px solid var(--border-color);
+            border-radius: 6px;
             background: var(--bg-secondary);
-            border-radius: 16px;
-            padding: 2rem;
-            box-shadow: var(--shadow-sm);
-            min-height: 400px;
-            border: 1px solid var(--border-color);
+            cursor: pointer;
+            font-size: 12px;
+            color: var(--text-secondary);
+            transition: all 0.2s;
         }
 
-        .content-header {
+        .theme-btn:hover, .theme-btn.active {
+            border-color: var(--accent-primary);
+            color: var(--accent-primary);
+        }
+
+        [data-theme="cyberpunk"] .theme-btn.active {
+            border-color: var(--accent-primary);
+            box-shadow: var(--accent-glow);
+        }
+
+        /* ========== 登录弹窗 ========== */
+        .login-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+        }
+
+        .login-modal.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        [data-theme="cyberpunk"] .login-modal {
+            background: rgba(0, 0, 0, 0.8);
+        }
+
+        .login-modal-content {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 32px;
+            width: 90%;
+            max-width: 400px;
+            transform: scale(0.9);
+            transition: all 0.3s;
+        }
+
+        .login-modal.show .login-modal-content {
+            transform: scale(1);
+        }
+
+        [data-theme="cyberpunk"] .login-modal-content {
+            border: 1px solid var(--accent-primary);
+            box-shadow: var(--accent-glow-strong);
+        }
+
+        .modal-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 1.5rem;
-            padding-bottom: 1rem;
-            border-bottom: 2px solid var(--border-color);
+            margin-bottom: 24px;
         }
 
-        .content-title {
-            font-size: 1.5rem;
-            color: var(--text-primary);
+        .modal-title {
+            font-size: 20px;
+            font-weight: 700;
         }
 
-        .content-actions { display: flex; gap: 0.5rem; }
-
-        .btn-sm {
-            padding: 0.625rem 1.25rem;
-            font-size: 0.875rem;
-            border-radius: 8px;
+        .modal-close {
+            width: 32px;
+            height: 32px;
             border: none;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-weight: 500;
-        }
-
-        .btn-primary { background: var(--accent-primary); color: white; }
-        .btn-primary:hover { background: #5568d3; transform: translateY(-1px); }
-        .btn-secondary { background: var(--hover-bg); color: var(--text-secondary); border: 1px solid var(--border-color); }
-        .btn-secondary:hover { background: var(--border-color); }
-        .btn-danger { background: #ff4757; color: white; }
-        .btn-danger:hover { background: #ff3344; transform: translateY(-1px); }
-
-        /* ========== 编辑器 ========== */
-        .editor-group { margin-bottom: 1.5rem; }
-        .editor-label {
-            display: block;
-            margin-bottom: 0.5rem;
-            color: var(--text-secondary);
-            font-weight: 500;
-        }
-        .editor-input, .editor-select {
-            width: 100%;
-            padding: 0.75rem 1rem;
-            border: 2px solid var(--border-color);
-            border-radius: 10px;
-            font-size: 1rem;
-            background: var(--bg-primary);
-            color: var(--text-primary);
-            transition: border-color 0.3s;
-        }
-        .editor-input:focus, .editor-select:focus {
-            outline: none;
-            border-color: var(--accent-primary);
-        }
-        .editor-textarea {
-            width: 100%;
-            min-height: 300px;
-            padding: 1rem;
-            border: 2px solid var(--border-color);
-            border-radius: 10px;
-            font-family: 'Monaco', 'Menlo', monospace;
-            font-size: 0.9rem;
-            line-height: 1.6;
-            resize: vertical;
             background: var(--code-bg);
-            color: var(--text-primary);
-        }
-        .editor-textarea:focus {
-            outline: none;
-            border-color: var(--accent-primary);
+            border-radius: 8px;
+            cursor: pointer;
+            color: var(--text-muted);
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        /* ========== 空状态 ========== */
-        .empty-state {
-            text-align: center;
-            padding: 4rem 1rem;
-            color: var(--text-muted);
+        .modal-close:hover {
+            background: var(--hover-bg);
+            color: var(--accent-primary);
         }
-        .empty-state-icon { font-size: 4rem; margin-bottom: 1rem; }
-        .empty-state h3 { color: var(--text-primary); margin-bottom: 0.5rem; }
 
         /* ========== 页脚 ========== */
         .footer {
             background: var(--bg-secondary);
-            color: var(--text-secondary);
-            padding: 1.5rem 2rem;
-            margin-top: auto;
+            border-top: 1px solid var(--border-color);
+            padding: 24px 32px;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        [data-theme="cyberpunk"] .footer {
+            background: linear-gradient(180deg, #12121a 0%, #0a0a0f 100%);
             border-top: 1px solid var(--border-color);
         }
-        .footer-content {
-            max-width: 1400px;
-            margin: 0 auto;
+
+        .footer-links {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 1rem;
+            justify-content: center;
+            gap: 24px;
+            margin-bottom: 12px;
         }
-        .footer-links { display: flex; gap: 1.5rem; }
-        .footer-link {
-            color: var(--text-muted);
+
+        .footer-links a {
+            color: var(--text-secondary);
             text-decoration: none;
-            font-size: 0.9rem;
             transition: color 0.2s;
         }
-        .footer-link:hover { color: var(--accent-primary); }
-        .footer-copyright { font-size: 0.85rem; opacity: 0.8; }
+
+        .footer-links a:hover {
+            color: var(--accent-primary);
+        }
 
         /* ========== 响应式 ========== */
         @media (max-width: 768px) {
-            .navbar { padding: 1rem; }
-            .menu-toggle { display: flex; }
-            .navbar-menu {
-                position: fixed;
-                top: 60px;
-                left: 0;
-                right: 0;
-                background: var(--accent-gradient);
-                flex-direction: column;
-                padding: 1rem;
-                gap: 0.5rem;
-                transform: translateY(-150%);
-                transition: transform 0.3s;
-                box-shadow: var(--shadow-md);
+            .sidebar {
+                display: none;
             }
-            .navbar-menu.active { transform: translateY(0); }
-            .navbar-btn { width: 100%; text-align: center; }
-            .main { padding: 1rem; }
-            .content-layout { grid-template-columns: 1fr; }
-            .sidebar { position: static; }
-            .stats-grid { grid-template-columns: 1fr 1fr; }
-            .content-header { flex-direction: column; gap: 0.5rem; align-items: flex-start; }
-            .footer-content { flex-direction: column; text-align: center; }
+
+            .content {
+                padding: 16px;
+            }
+
+            .article-title-main {
+                font-size: 24px;
+            }
+
+            .admin-panel {
+                bottom: 16px;
+                right: 16px;
+            }
+
+            .admin-menu {
+                right: -8px;
+                min-width: 260px;
+            }
         }
-        @media (max-width: 480px) {
-            .stats-grid { grid-template-columns: 1fr; }
-            .content-panel { padding: 1.25rem; }
+
+        /* ========== 加载动画 ========== */
+        .loading {
+            text-align: center;
+            padding: 60px;
+            color: var(--text-muted);
+        }
+
+        .loading::after {
+            content: '...';
+            animation: dots 1.5s infinite;
+        }
+
+        @keyframes dots {
+            0%, 20% { content: '.'; }
+            40% { content: '..'; }
+            60%, 100% { content: '...'; }
         }
 
         /* ========== 滚动条 ========== */
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: var(--bg-primary); }
-        ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--accent-primary); }
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-primary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-primary);
+        }
     </style>
 </head>
 <body>
     <!-- 页头 -->
     <header class="header">
-        <nav class="navbar">
-            <a href="/" class="navbar-brand">📚 Erudit</a>
-            <div class="menu-toggle" onclick="toggleMenu()">
-                <span></span><span></span><span></span>
-            </div>
-            <div class="navbar-menu" id="navMenu">
-                <button class="navbar-btn" onclick="showSearch()">🔍 搜索</button>
-                <button class="navbar-btn" onclick="showRSS()">📡 RSS</button>
-                <div class="navbar-btn" onclick="toggleTheme()" title="切换主题">
-                    <span id="themeLabel">CYBER</span>
-                    <span class="theme-icon">☀️</span>
-                    <button class="theme-toggle"></button>
-                    <span class="theme-icon">🌙</span>
-                </div>
-                <button class="navbar-btn primary" onclick="location.href='/admin'">⚙️ 管理后台</button>
-            </div>
+        <div class="navbar-brand">📚 Erudit</div>
+        <nav class="navbar-nav">
+            <button class="nav-btn" onclick="showSearch()">🔍 搜索</button>
+            <button class="nav-btn" onclick="showRSS()">📡 RSS</button>
+            <a href="/docs" class="nav-btn">📖 API</a>
+            <a href="/admin" class="nav-btn primary">⚙️ 后台</a>
         </nav>
     </header>
 
     <!-- 主体 -->
-    <main class="main">
-        <div id="loginSection" class="login-wrapper">
-            <div class="login-card">
-                <h2 class="login-title">📚 Erudit 知识库</h2>
-                <div class="form-group">
-                    <label class="form-label">密码</label>
-                    <input type="password" id="password" class="form-input" placeholder="请输入密码" onkeypress="if(event.key==='Enter') login()">
+    <div class="main">
+        <!-- 侧边栏 -->
+        <aside class="sidebar">
+            <!-- 统计面板 -->
+            <div class="stats-panel">
+                <div class="stat-item">
+                    <span class="stat-label">文章数</span>
+                    <span class="stat-number" id="stat-articles">0</span>
                 </div>
-                <button class="btn" onclick="login()">登录</button>
-            </div>
-        </div>
-        <div id="mainSection" class="content-layout hidden">
-            <aside class="sidebar">
-                <div class="sidebar-section">
-                    <div class="stats-grid">
-                        <div class="stat-item">
-                            <div class="stat-number" id="statArticles">0</div>
-                            <div class="stat-label">文章</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-number" id="statCategories">0</div>
-                            <div class="stat-label">分类</div>
-                        </div>
-                    </div>
+                <div class="stat-item">
+                    <span class="stat-label">分类数</span>
+                    <span class="stat-number" id="stat-categories">0</span>
                 </div>
-                <div class="sidebar-section">
-                    <div class="sidebar-title">文章列表</div>
-                    <ul class="article-list" id="articleList"></ul>
-                </div>
-            </aside>
-            <div class="content-panel" id="contentPanel">
-                <div class="empty-state">
-                    <div class="empty-state-icon">📖</div>
-                    <h3>欢迎使用 Erudit</h3>
-                    <p>从左侧选择文章阅读</p>
+                <div class="stat-item">
+                    <span class="stat-label">标签数</span>
+                    <span class="stat-number" id="stat-tags">0</span>
                 </div>
             </div>
-        </div>
-    </main>
+
+            <!-- 文章列表 -->
+            <div class="section-title">文章列表</div>
+            <div class="article-list" id="article-list">
+                <div class="loading">加载中</div>
+            </div>
+        </aside>
+
+        <!-- 内容区 -->
+        <main class="content" id="content">
+            <div class="loading">加载中</div>
+        </main>
+    </div>
 
     <!-- 页脚 -->
     <footer class="footer">
-        <div class="footer-content">
-            <div class="footer-links">
-                <a href="/" class="footer-link">首页</a>
-                <a href="/admin" class="footer-link">管理后台</a>
-                <a href="/api/docs" class="footer-link">API 文档</a>
-                <a href="https://github.com/trencps/erudit" class="footer-link" target="_blank">GitHub</a>
-            </div>
-            <div class="footer-copyright">© 2026 Erudit</div>
+        <div class="footer-links">
+            <a href="/">首页</a>
+            <a href="/docs">API 文档</a>
+            <a href="https://github.com/trencps/erudit" target="_blank">GitHub</a>
         </div>
+        <div>© 2026 Erudit - 个人知识管理系统</div>
     </footer>
 
+    <!-- 右下角管理面板 -->
+    <div class="admin-panel">
+        <div class="admin-menu" id="admin-menu">
+            <div class="menu-title">管理面板</div>
+            
+            <!-- 主题切换 -->
+            <div class="menu-item" onclick="toggleThemeMenu()">
+                <div class="menu-item-icon">🎨</div>
+                <div class="menu-item-content">
+                    <div class="menu-item-title">主题切换</div>
+                    <div class="menu-item-desc">切换界面主题</div>
+                </div>
+            </div>
+            <div class="theme-selector" id="theme-selector" style="display: none;">
+                <button class="theme-btn active" data-theme="light" onclick="setTheme('light')">☀️ 浅色</button>
+                <button class="theme-btn" data-theme="dark" onclick="setTheme('dark')">🌙 深色</button>
+                <button class="theme-btn" data-theme="cyberpunk" onclick="setTheme('cyberpunk')">💜 赛博</button>
+            </div>
+
+            <!-- 后台登录 -->
+            <div class="menu-item" onclick="showLoginModal()">
+                <div class="menu-item-icon">🔐</div>
+                <div class="menu-item-content">
+                    <div class="menu-item-title">后台登录</div>
+                    <div class="menu-item-desc">管理员登录</div>
+                </div>
+            </div>
+
+            <!-- API 文档 -->
+            <div class="menu-item" onclick="window.open('/docs', '_blank')">
+                <div class="menu-item-icon">📖</div>
+                <div class="menu-item-content">
+                    <div class="menu-item-title">API 文档</div>
+                    <div class="menu-item-desc">接口文档</div>
+                </div>
+            </div>
+
+            <!-- RSS 订阅 -->
+            <div class="menu-item" onclick="showRSS()">
+                <div class="menu-item-icon">📡</div>
+                <div class="menu-item-content">
+                    <div class="menu-item-title">RSS 订阅</div>
+                    <div class="menu-item-desc">订阅最新文章</div>
+                </div>
+            </div>
+
+            <!-- GitHub -->
+            <div class="menu-item" onclick="window.open('https://github.com/trencps/erudit', '_blank')">
+                <div class="menu-item-icon">⭐</div>
+                <div class="menu-item-content">
+                    <div class="menu-item-title">GitHub</div>
+                    <div class="menu-item-desc">查看源码</div>
+                </div>
+            </div>
+        </div>
+        <button class="admin-toggle" id="admin-toggle" onclick="toggleAdminMenu()">⚙️</button>
+    </div>
+
+    <!-- 登录弹窗 -->
+    <div class="login-modal" id="login-modal">
+        <div class="login-modal-content">
+            <div class="modal-header">
+                <div class="modal-title">后台登录</div>
+                <button class="modal-close" onclick="closeLoginModal()">×</button>
+            </div>
+            <div class="form-group">
+                <label class="form-label">密码</label>
+                <input type="password" class="form-input" id="login-password" placeholder="请输入管理密码">
+            </div>
+            <button class="btn" onclick="doLogin()">登录</button>
+            <div class="error-msg" id="login-error"></div>
+        </div>
+    </div>
+
     <script>
-        let token = '', articles = [], categories = [];
+        let currentArticle = null;
+        let token = null;
 
-        function toggleMenu() {
-            document.getElementById('navMenu').classList.toggle('active');
-        }
-
-        // 主题切换
-        function toggleTheme() {
-            const html = document.documentElement;
-            const current = html.getAttribute('data-theme');
-            const themes = ["light", "dark", "cyberpunk"];
-            const idx = themes.indexOf(current);
-            const next = themes[(idx + 1) % themes.length];
-            html.setAttribute('data-theme', next);
-            localStorage.setItem('erudit_theme', next);
-            const label = document.getElementById('themeLabel');
-            if (label) label.textContent = next.toUpperCase();
-        }
-
-        // 初始化主题
-        (function initTheme() {
-            const saved = localStorage.getItem('erudit_theme') || 'light';
-            document.documentElement.setAttribute('data-theme', saved);
-        })();
-
-        async function login() {
-            const password = document.getElementById('password').value;
-            if (!password) { alert('请输入密码'); return; }
-            const resp = await fetch('/api/auth/login?password=' + encodeURIComponent(password));
-            const data = await resp.json();
-            if (data.token) {
-                token = data.token;
-                localStorage.setItem('erudit_token', token);
-                showMain();
-            } else { alert(data.detail || '密码错误'); }
-        }
-
-        function showMain() {
-            document.getElementById('loginSection').classList.add('hidden');
-            document.getElementById('mainSection').classList.remove('hidden');
+        // 初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            loadStats();
             loadArticles();
-        }
-
-        async function loadArticles() {
-            if (!token) return;
-            const resp = await fetch('/api/articles?page=1&page_size=50', { headers: { 'Authorization': 'Bearer ' + token } });
-            const data = await resp.json();
-            articles = data.articles || [];
-            document.getElementById('statArticles').textContent = data.total || articles.length;
-            renderList();
-            await loadCategories();
-        }
-
-        async function loadCategories() {
-            if (!token) return;
-            const resp = await fetch('/api/categories', { headers: { 'Authorization': 'Bearer ' + token } });
-            categories = await resp.json();
-            document.getElementById('statCategories').textContent = categories.length || 0;
-        }
-
-        function renderList() {
-            document.getElementById('articleList').innerHTML = articles.map(a =>
-                '<li class="article-item" onclick="loadArticle(\\'' + a.slug + '\\')">' +
-                '<div class="article-item-title">' + escapeHtml(a.title) + '</div>' +
-                '<div class="article-item-meta">' + (a.category_id || '未分类') + '</div>' +
-                '</li>'
-            ).join('');
-        }
-
-        async function loadArticle(slug) {
-            document.querySelectorAll('.article-item').forEach(el => el.classList.remove('active'));
-            event.target.closest('.article-item').classList.add('active');
-            const resp = await fetch('/api/articles/' + slug, { headers: { 'Authorization': 'Bearer ' + token } });
-            const article = await resp.json();
-            document.getElementById('contentPanel').innerHTML = `
-                <div class="content-header">
-                    <h2 class="content-title">${escapeHtml(article.title)}</h2>
-                    <div class="content-actions">
-                        <button class="btn-sm btn-secondary" onclick="location.href='/admin'">✏️ 编辑</button>
-                        <button class="btn-sm btn-secondary" onclick="exportArticle('${slug}')">📥 导出</button>
-                    </div>
-                </div>
-                <div style="line-height:1.8;color:var(--text-primary);">
-                    ${renderMarkdown(article.content)}
-                </div>
-            `;
-        }
-
-        function exportArticle(slug) {
-            window.open('/api/exports/' + slug + '?format=markdown');
-        }
-
-        async function showSearch() {
-            const keyword = prompt('请输入搜索关键词:');
-            if (!keyword) return;
-            const resp = await fetch('/api/search?keyword=' + encodeURIComponent(keyword), {
-                headers: { 'Authorization': 'Bearer ' + token }
+            loadTheme();
+            
+            // 点击外部关闭菜单
+            document.addEventListener('click', (e) => {
+                const panel = document.querySelector('.admin-panel');
+                if (!panel.contains(e.target)) {
+                    document.getElementById('admin-menu').classList.remove('show');
+                    document.getElementById('admin-toggle').classList.remove('active');
+                }
             });
-            const data = await resp.json();
-            articles = data.articles || [];
-            document.getElementById('statArticles').textContent = data.total || articles.length;
-            renderList();
-            document.getElementById('contentPanel').innerHTML = '<div class="empty-state"><div class="empty-state-icon">🔍</div><h3>搜索结果</h3><p>共找到 ' + (data.total || 0) + ' 篇文章</p></div>';
+        });
+
+        // 加载统计
+        async function loadStats() {
+            try {
+                const res = await fetch('/stats');
+                const data = await res.json();
+                document.getElementById('stat-articles').textContent = data.articles || 0;
+                document.getElementById('stat-categories').textContent = data.categories || 0;
+                document.getElementById('stat-tags').textContent = data.tags || 0;
+            } catch (e) {
+                console.error('加载统计失败:', e);
+            }
         }
 
-        function showRSS() { window.open('/api/rss'); }
-
-        function escapeHtml(text) {
-            if (!text) return '';
-            return text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+        // 加载文章列表
+        async function loadArticles() {
+            try {
+                const res = await fetch('/articles');
+                const data = await res.json();
+                const list = document.getElementById('article-list');
+                
+                if (data.articles && data.articles.length > 0) {
+                    list.innerHTML = data.articles.map(a => `
+                        <div class="article-item" onclick="showArticle('${a.slug}')">
+                            <div class="article-title">${a.title}</div>
+                            <div class="article-meta">${a.created_at || '未知时间'}</div>
+                        </div>
+                    `).join('');
+                } else {
+                    list.innerHTML = '<div class="loading">暂无文章</div>';
+                }
+            } catch (e) {
+                document.getElementById('article-list').innerHTML = '<div class="loading">加载失败</div>';
+            }
         }
 
-        function renderMarkdown(text) {
-            if (!text) return '';
-            return text
-                .replace(/^### (.+)$/gm, '<h3>$1</h3>')
-                .replace(/^## (.+)$/gm, '<h2>$1</h2>')
-                .replace(/^# (.+)$/gm, '<h1>$1</h1>')
-                .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-                .replace(/\*(.+?)\*/g, '<em>$1</em>')
-                .replace(/`(.+?)`/g, '<code style="background:var(--code-bg);padding:2px 6px;border-radius:4px;">$1</code>')
-                .replace(/\n/g, '<br>');
+        // 显示文章
+        async function showArticle(slug) {
+            try {
+                const res = await fetch(`/articles/${slug}`);
+                const data = await res.json();
+                currentArticle = data;
+                
+                // 高亮当前文章
+                document.querySelectorAll('.article-item').forEach(el => {
+                    el.classList.remove('active');
+                    if (el.onclick && el.onclick.toString().includes(slug)) {
+                        el.classList.add('active');
+                    }
+                });
+                
+                // 渲染内容
+                document.getElementById('content').innerHTML = `
+                    <div class="article-view">
+                        <div class="article-header">
+                            <h1 class="article-title-main">${data.title}</h1>
+                            <div class="article-meta">
+                                <span>📅 ${data.created_at || '未知'}</span>
+                                ${data.category ? `<span>📁 ${data.category}</span>` : ''}
+                                ${data.tags ? `<span>🏷️ ${data.tags.join(', ')}</span>` : ''}
+                            </div>
+                        </div>
+                        <div class="article-content">${data.content}</div>
+                    </div>
+                `;
+            } catch (e) {
+                document.getElementById('content').innerHTML = '<div class="loading">加载失败</div>';
+            }
         }
 
-        const savedToken = localStorage.getItem('erudit_token');
-        if (savedToken) { token = savedToken; showMain(); }
+        // 搜索
+        function showSearch() {
+            const keyword = prompt('请输入搜索关键词:');
+            if (keyword) {
+                window.location.href = `/search?keyword=${encodeURIComponent(keyword)}`;
+            }
+        }
 
-        document.addEventListener('click', (e) => {
-            if (!e.target.closest('.navbar')) document.getElementById('navMenu').classList.remove('active');
+        // RSS
+        function showRSS() {
+            window.open('/rss', '_blank');
+        }
+
+        // 管理面板切换
+        function toggleAdminMenu() {
+            const menu = document.getElementById('admin-menu');
+            const toggle = document.getElementById('admin-toggle');
+            menu.classList.toggle('show');
+            toggle.classList.toggle('active');
+        }
+
+        // 主题菜单切换
+        function toggleThemeMenu() {
+            const selector = document.getElementById('theme-selector');
+            selector.style.display = selector.style.display === 'none' ? 'flex' : 'none';
+        }
+
+        // 设置主题
+        function setTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('erudit-theme', theme);
+            
+            // 更新按钮状态
+            document.querySelectorAll('.theme-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.theme === theme);
+            });
+        }
+
+        // 加载主题
+        function loadTheme() {
+            const saved = localStorage.getItem('erudit-theme') || 'light';
+            setTheme(saved);
+        }
+
+        // 登录弹窗
+        function showLoginModal() {
+            document.getElementById('login-modal').classList.add('show');
+            document.getElementById('login-password').focus();
+        }
+
+        function closeLoginModal() {
+            document.getElementById('login-modal').classList.remove('show');
+            document.getElementById('login-password').value = '';
+            document.getElementById('login-error').textContent = '';
+        }
+
+        // 登录
+        async function doLogin() {
+            const password = document.getElementById('login-password').value;
+            if (!password) {
+                document.getElementById('login-error').textContent = '请输入密码';
+                return;
+            }
+            
+            try {
+                const res = await fetch(`/api/auth/login?password=${encodeURIComponent(password)}`);
+                const data = await res.json();
+                
+                if (data.token) {
+                    token = data.token;
+                    localStorage.setItem('erudit-token', token);
+                    closeLoginModal();
+                    alert('登录成功！');
+                    window.location.href = '/admin';
+                } else {
+                    document.getElementById('login-error').textContent = '密码错误';
+                }
+            } catch (e) {
+                document.getElementById('login-error').textContent = '登录失败，请重试';
+            }
+        }
+
+        // 回车登录
+        document.getElementById('login-password')?.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') doLogin();
         });
     </script>
 </body>
