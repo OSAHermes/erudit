@@ -15,14 +15,6 @@ services:
       - KB_ARTICLES_DIR=/articles
     restart: unless-stopped
 
-  caddy:
-    image: caddy:2-alpine
-    container_name: caddy
-    network_mode: host
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile:ro
-    restart: unless-stopped
-
 volumes:
   erudit_data:
   erudit_articles:
