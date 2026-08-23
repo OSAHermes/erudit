@@ -156,258 +156,171 @@
             color: var(--accent-primary);
         }
 
-        .nav-btn.primary {
+        .nav-btn.active {
             background: var(--accent-gradient);
             color: white;
         }
 
-        .nav-btn.primary:hover {
-            opacity: 0.9;
-            box-shadow: var(--accent-glow);
-        }
-
-        /* ========== 主体布局 ========== */
+        /* ========== 主体 ========== */
         .main {
-            display: flex;
-            min-height: calc(100vh - 64px);
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 32px 24px;
         }
 
-        /* ========== 侧边栏 ========== */
-        .sidebar {
-            width: 280px;
-            background: var(--bg-sidebar);
-            border-right: 1px solid var(--border-color);
-            padding: 24px 16px;
-            overflow-y: auto;
-            transition: all 0.3s;
-        }
-
-        [data-theme="cyberpunk"] .sidebar {
-            background: var(--bg-sidebar);
-            border-right: 1px solid var(--border-color);
-            box-shadow: inset -1px 0 20px rgba(0, 240, 255, 0.05);
-        }
-
-        .stats-panel {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-
-        .stat-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 12px 0;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .stat-item:last-child {
-            border-bottom: none;
-        }
-
-        .stat-label {
-            color: var(--text-muted);
-            font-size: 14px;
-        }
-
-        .stat-number {
-            font-size: 20px;
-            font-weight: 700;
-            color: var(--accent-primary);
-        }
-
-        [data-theme="cyberpunk"] .stat-number {
-            text-shadow: var(--accent-glow);
-        }
-
-        .section-title {
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin: 20px 0 12px 8px;
-        }
-
-        .article-list {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-
-        .article-item {
-            padding: 12px 16px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.2s;
-            color: var(--text-secondary);
-        }
-
-        .article-item:hover {
-            background: var(--hover-bg);
-            color: var(--accent-primary);
-        }
-
-        .article-item.active {
-            background: var(--hover-bg);
-            color: var(--accent-primary);
-            font-weight: 600;
-        }
-
-        [data-theme="cyberpunk"] .article-item {
-            border-left: 2px solid transparent;
-        }
-
-        [data-theme="cyberpunk"] .article-item:hover,
-        [data-theme="cyberpunk"] .article-item.active {
-            border-left-color: var(--accent-primary);
-            background: var(--hover-bg);
-        }
-
-        .article-title {
-            font-size: 14px;
-            margin-bottom: 4px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .article-meta {
-            font-size: 12px;
-            color: var(--text-muted);
-        }
-
-        /* ========== 内容区 ========== */
-        .content {
-            flex: 1;
-            padding: 32px;
-            overflow-y: auto;
-        }
-
-        .login-card {
-            max-width: 400px;
-            margin: 60px auto;
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
-            padding: 40px;
-            box-shadow: var(--shadow-lg);
-        }
-
-        [data-theme="cyberpunk"] .login-card {
-            border: 1px solid var(--accent-primary);
-            box-shadow: var(--accent-glow-strong);
-        }
-
-        .login-title {
-            font-size: 24px;
-            font-weight: 700;
-            text-align: center;
-            margin-bottom: 24px;
-            color: var(--text-primary);
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-label {
-            display: block;
-            font-size: 14px;
-            color: var(--text-secondary);
-            margin-bottom: 8px;
-        }
-
-        .form-input {
-            width: 100%;
-            padding: 12px 16px;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            background: var(--bg-primary);
-            color: var(--text-primary);
-            font-size: 16px;
-            transition: all 0.2s;
-        }
-
-        .form-input:focus {
-            outline: none;
-            border-color: var(--accent-primary);
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        }
-
-        .form-input::placeholder {
-            color: var(--text-muted);
-        }
-
-        .btn {
-            width: 100%;
-            padding: 14px 24px;
-            border: none;
-            border-radius: 8px;
-            background: var(--accent-gradient);
-            color: white;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--accent-glow);
-        }
-
-        .btn:active {
-            transform: translateY(0);
-        }
-
-        .error-msg {
-            color: #ef4444;
-            font-size: 14px;
-            margin-top: 12px;
-            text-align: center;
-        }
-
-        .article-view {
-            max-width: 800px;
-        }
-
-        .article-header {
+        /* ========== 文章卡片网格 ========== */
+        .articles-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 24px;
             margin-bottom: 32px;
         }
 
-        .article-title-main {
-            font-size: 36px;
+        .article-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .article-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        [data-theme="cyberpunk"] .article-card {
+            border: 1px solid var(--border-color);
+        }
+
+        [data-theme="cyberpunk"] .article-card:hover {
+            box-shadow: var(--accent-glow-strong);
+            border-color: var(--accent-primary);
+        }
+
+        /* 文章图片 */
+        .article-image {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            background: var(--code-bg);
+            display: block;
+        }
+
+        .article-image-placeholder {
+            width: 100%;
+            height: 180px;
+            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--code-bg) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            color: var(--text-muted);
+        }
+
+        /* 文章内容 */
+        .article-content-card {
+            padding: 20px;
+        }
+
+        .article-card-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .article-card-summary {
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 12px;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .article-card-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 12px;
+            border-top: 1px solid var(--border-color);
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .article-card-category {
+            padding: 4px 12px;
+            background: var(--tag-bg);
+            color: var(--tag-text);
+            border-radius: 20px;
+            font-size: 12px;
+        }
+
+        /* ========== 文章详情视图 ========== */
+        .article-view {
+            max-width: 800px;
+            margin: 0 auto;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        [data-theme="cyberpunk"] .article-view {
+            border: 1px solid var(--border-color);
+        }
+
+        .article-view-header {
+            padding: 32px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .article-view-title {
+            font-size: 32px;
             font-weight: 700;
             margin-bottom: 16px;
             line-height: 1.2;
         }
 
-        .article-meta {
+        .article-view-meta {
             display: flex;
             gap: 16px;
             color: var(--text-muted);
             font-size: 14px;
+            flex-wrap: wrap;
         }
 
-        .article-content {
+        .article-view-image {
+            width: 100%;
+            max-height: 400px;
+            object-fit: cover;
+        }
+
+        .article-view-content {
+            padding: 32px;
             font-size: 16px;
             line-height: 1.8;
             color: var(--text-secondary);
         }
 
-        .article-content h1, .article-content h2, .article-content h3 {
+        .article-view-content h1, .article-view-content h2, .article-view-content h3 {
             margin: 32px 0 16px;
             color: var(--text-primary);
         }
 
-        .article-content p {
+        .article-view-content p {
             margin-bottom: 16px;
         }
 
-        .article-content code {
+        .article-view-content code {
             background: var(--code-bg);
             padding: 2px 6px;
             border-radius: 4px;
@@ -415,7 +328,7 @@
             font-size: 14px;
         }
 
-        .article-content pre {
+        .article-view-content pre {
             background: var(--code-bg);
             padding: 20px;
             border-radius: 8px;
@@ -423,57 +336,157 @@
             margin: 16px 0;
         }
 
-        .article-content pre code {
+        .article-view-content pre code {
             background: none;
             padding: 0;
         }
 
-        .article-content blockquote {
+        .article-view-content blockquote {
             border-left: 4px solid var(--accent-primary);
             padding-left: 20px;
             margin: 16px 0;
             color: var(--text-muted);
         }
 
-        .article-content img {
+        .article-view-content img {
             max-width: 100%;
             border-radius: 8px;
             box-shadow: var(--shadow-md);
         }
 
-        .article-content a {
+        .article-view-content a {
             color: var(--accent-primary);
             text-decoration: none;
         }
 
-        .article-content a:hover {
+        .article-view-content a:hover {
             text-decoration: underline;
         }
 
-        .article-content table {
+        .article-view-content table {
             width: 100%;
             border-collapse: collapse;
             margin: 16px 0;
         }
 
-        .article-content th, .article-content td {
+        .article-view-content th, .article-view-content td {
             border: 1px solid var(--border-color);
             padding: 12px;
             text-align: left;
         }
 
-        .article-content th {
+        .article-view-content th {
             background: var(--code-bg);
             font-weight: 600;
         }
 
-        .article-content ul, .article-content ol {
+        .article-view-content ul, .article-view-content ol {
             padding-left: 24px;
             margin: 16px 0;
         }
 
-        .article-content li {
+        .article-view-content li {
             margin: 8px 0;
+        }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 14px;
+            margin-bottom: 20px;
+            transition: all 0.2s;
+        }
+
+        .back-btn:hover {
+            background: var(--hover-bg);
+            color: var(--accent-primary);
+            border-color: var(--accent-primary);
+        }
+
+        /* ========== 统计面板 ========== */
+        .stats-panel {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 32px;
+            display: flex;
+            gap: 32px;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .stat-number {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--accent-primary);
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        /* ========== 页脚 ========== */
+        .footer {
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border-color);
+            padding: 24px 32px;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            margin-bottom: 12px;
+        }
+
+        .footer-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .footer-links a:hover {
+            color: var(--accent-primary);
+        }
+
+        .footer-info {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .footer-divider {
+            color: var(--text-muted);
+        }
+
+        .footer-info a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .footer-info a:hover {
+            color: var(--accent-primary);
         }
 
         /* ========== 右下角管理面板 ========== */
@@ -702,83 +715,65 @@
             color: var(--accent-primary);
         }
 
-        /* ========== 页脚 ========== */
-        .footer {
-            background: var(--bg-secondary);
-            border-top: 1px solid var(--border-color);
-            padding: 24px 32px;
-            text-align: center;
-            color: var(--text-muted);
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
             font-size: 14px;
-            transition: all 0.3s;
-        }
-
-        .footer-links {
-            display: flex;
-            justify-content: center;
-            gap: 24px;
-            margin-bottom: 12px;
-        }
-
-        .footer-links a {
             color: var(--text-secondary);
-            text-decoration: none;
-            transition: color 0.3s;
+            margin-bottom: 8px;
         }
 
-        .footer-links a:hover {
-            color: var(--accent-primary);
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-size: 16px;
+            transition: all 0.2s;
         }
 
-        .footer-info {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 12px;
-            flex-wrap: wrap;
+        .form-input:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
 
-        .footer-divider {
+        .form-input::placeholder {
             color: var(--text-muted);
         }
 
-        .footer-info a {
-            color: var(--text-secondary);
-            text-decoration: none;
-            transition: color 0.3s;
+        .btn {
+            width: 100%;
+            padding: 14px 24px;
+            border: none;
+            border-radius: 8px;
+            background: var(--accent-gradient);
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
         }
 
-        .footer-info a:hover {
-            color: var(--accent-primary);
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--accent-glow);
         }
 
-        .footer-links a:hover {
-            color: var(--accent-primary);
+        .btn:active {
+            transform: translateY(0);
         }
 
-        /* ========== 响应式 ========== */
-        @media (max-width: 768px) {
-            .sidebar {
-                display: none;
-            }
-
-            .content {
-                padding: 16px;
-            }
-
-            .article-title-main {
-                font-size: 24px;
-            }
-
-            .admin-panel {
-                bottom: 16px;
-                right: 16px;
-            }
-
-            .admin-menu {
-                right: -8px;
-                min-width: 260px;
-            }
+        .error-msg {
+            color: #ef4444;
+            font-size: 14px;
+            margin-top: 12px;
+            text-align: center;
         }
 
         /* ========== 加载动画 ========== */
@@ -797,6 +792,36 @@
             0%, 20% { content: '.'; }
             40% { content: '..'; }
             60%, 100% { content: '...'; }
+        }
+
+        /* ========== 响应式 ========== */
+        @media (max-width: 768px) {
+            .main {
+                padding: 16px;
+            }
+
+            .articles-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .article-view-title {
+                font-size: 24px;
+            }
+
+            .stats-panel {
+                flex-direction: column;
+                gap: 16px;
+            }
+
+            .admin-panel {
+                bottom: 16px;
+                right: 16px;
+            }
+
+            .admin-menu {
+                right: -8px;
+                min-width: 260px;
+            }
         }
 
         /* ========== 滚动条 ========== */
@@ -825,42 +850,13 @@
         <div class="navbar-brand">📚 Erudit</div>
         <nav class="navbar-nav" id="category-nav">
             <button class="nav-btn active" onclick="filterCategory('all')">全部</button>
-            <button class="nav-btn" data-category-id="1" onclick="filterCategory(1)">开源项目</button>
         </nav>
     </header>
 
     <!-- 主体 -->
-    <div class="main">
-        <!-- 侧边栏 -->
-        <aside class="sidebar">
-            <!-- 统计面板 -->
-            <div class="stats-panel">
-                <div class="stat-item">
-                    <span class="stat-label">文章数</span>
-                    <span class="stat-number" id="stat-articles">0</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">分类数</span>
-                    <span class="stat-number" id="stat-categories">0</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">标签数</span>
-                    <span class="stat-number" id="stat-tags">0</span>
-                </div>
-            </div>
-
-            <!-- 文章列表 -->
-            <div class="section-title">文章列表</div>
-            <div class="article-list" id="article-list">
-                <div class="loading">加载中</div>
-            </div>
-        </aside>
-
-        <!-- 内容区 -->
-        <main class="content" id="content">
-            <div class="loading">加载中</div>
-        </main>
-    </div>
+    <main class="main" id="main-content">
+        <div class="loading">加载中</div>
+    </main>
 
     <!-- 页脚 -->
     <footer class="footer">
@@ -958,7 +954,7 @@
 
         // 初始化
         document.addEventListener('DOMContentLoaded', () => {
-            loadStats();
+            loadCategories();
             loadArticles();
             loadTheme();
             
@@ -972,17 +968,31 @@
             });
         });
 
-        // 加载统计
-        async function loadStats() {
+        // 加载分类
+        async function loadCategories() {
             try {
-                const res = await fetch('/stats');
+                const res = await fetch('/categories');
                 const data = await res.json();
-                console.log('Stats response:', data);
-                document.getElementById('stat-articles').textContent = data.articles || 0;
-                document.getElementById('stat-categories').textContent = data.categories || 0;
-                document.getElementById('stat-tags').textContent = data.tags || 0;
+                
+                // 更新导航
+                const nav = document.getElementById('category-nav');
+                nav.innerHTML = '<button class="nav-btn active" onclick="filterCategory(\'all\')">全部</button>';
+                
+                if (data.categories) {
+                    data.categories.forEach(c => {
+                        const btn = document.createElement('button');
+                        btn.className = 'nav-btn';
+                        btn.dataset.categoryId = c.id;
+                        btn.textContent = c.name;
+                        btn.onclick = () => filterCategory(c.id);
+                        nav.appendChild(btn);
+                    });
+                }
+                
+                // 更新统计
+                document.getElementById('stat-categories') && (document.getElementById('stat-categories').textContent = data.categories?.length || 0);
             } catch (e) {
-                console.error('加载统计失败:', e);
+                console.error('Load categories error:', e);
             }
         }
 
@@ -992,32 +1002,98 @@
                 const res = await fetch('/articles');
                 const data = await res.json();
                 console.log('Articles response:', data);
-                const list = document.getElementById('article-list');
                 
                 let articles = data.articles || [];
                 if (categoryId !== 'all') {
                     articles = articles.filter(a => a.category_id === parseInt(categoryId));
                 }
                 
+                const main = document.getElementById('main-content');
+                
                 if (articles.length > 0) {
-                    list.innerHTML = articles.map(a => `
-                        <div class="article-item" onclick="showArticle('${a.slug}')">
-                            <div class="article-title">${a.title}</div>
-                            <div class="article-meta">${a.created_at || '未知时间'}</div>
+                    main.innerHTML = `
+                        <div class="stats-panel">
+                            <div class="stat-item">
+                                <span class="stat-number">${data.articles?.length || 0}</span>
+                                <span class="stat-label">文章数</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-number">${data.categories?.length || 0}</span>
+                                <span class="stat-label">分类数</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-number">${data.tags?.length || 0}</span>
+                                <span class="stat-label">标签数</span>
+                            </div>
                         </div>
-                    `).join('');
+                        <div class="articles-grid" id="articles-grid">
+                            ${articles.map(a => renderArticleCard(a)).join('')}
+                        </div>
+                    `;
                 } else {
-                    list.innerHTML = '<div class="loading">暂无文章</div>';
+                    main.innerHTML = '<div class="loading">暂无文章</div>';
                 }
             } catch (e) {
                 console.error('Load articles error:', e);
-                document.getElementById('article-list').innerHTML = '<div class="loading">加载失败</div>';
+                document.getElementById('main-content').innerHTML = '<div class="loading">加载失败</div>';
             }
+        }
+
+        // 渲染文章卡片
+        function renderArticleCard(a) {
+            const ghImage = getGitHubImage(a.title, a.slug);
+            const summary = extractSummary(a.content, 150);
+            
+            return `
+                <div class="article-card" onclick="showArticle('${a.slug}')">
+                    <div class="article-image-placeholder">
+                        <img src="${ghImage}" alt="${a.title}" class="article-image" onerror="this.style.display='none'">
+                    </div>
+                    <div class="article-content-card">
+                        <div class="article-card-title">${a.title}</div>
+                        <div class="article-card-summary">${summary}</div>
+                        <div class="article-card-meta">
+                            <span class="article-card-category">${a.category || '无分类'}</span>
+                            <span>${a.created_at || '未知'}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // 获取 GitHub 项目图片
+        function getGitHubImage(title, slug) {
+            // 尝试从 slug 提取项目名
+            const match = slug.match(/github\.com\/([^\/]+)\/([^\/]+)/) || slug.match(/(\w+[-\w]*)/);
+            if (match) {
+                const projName = match[match.length - 1];
+                return `https://opengraph.githubapi.com/github.com/trencps/${projName}`;
+            }
+            return 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iI2YwZjJmNSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMjAiIGZpbGw9IiM4ODg4OGEiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj7wn5aX5Lus5Zu95aSW5oiX5Yqx5Lmf6YOo5LiK5ZCN5Zu95aSW6K665YqoPC90ZXh0Pjwvc3ZnPg==';
+        }
+
+        // 提取摘要
+        function extractSummary(content, maxLength) {
+            if (!content) return '暂无摘要...';
+            
+            let clean = content
+                .replace(/```[\s\S]*?```/g, '')
+                .replace(/`[^`]+`/g, '')
+                .replace(/#{1,6}\s*/g, '')
+                .replace(/\*\*(.*?)\*\*/g, '$1')
+                .replace(/\*(.*?)\*/g, '$1')
+                .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+                .replace(/!\[[^\]]*\]\([^)]+\)/g, '')
+                .replace(/\n+/g, ' ')
+                .trim();
+            
+            if (clean.length <= maxLength) return clean;
+            
+            return clean.substring(0, maxLength) + '...';
         }
 
         // 分类筛选
         function filterCategory(categoryId) {
-            // 更新按钮状态
             document.querySelectorAll('#category-nav .nav-btn').forEach(btn => {
                 btn.classList.remove('active');
                 if (categoryId === 'all' && btn.textContent === '全部') {
@@ -1037,32 +1113,26 @@
                 console.log('Article data:', data);
                 currentArticle = data;
                 
-                // 高亮当前文章
-                document.querySelectorAll('.article-item').forEach(el => {
-                    el.classList.remove('active');
-                    if (el.onclick && el.onclick.toString().includes(slug)) {
-                        el.classList.add('active');
-                    }
-                });
+                const ghImage = getGitHubImage(data.title, slug);
                 
-                // 渲染内容
-                const content = data.content || '';
-                document.getElementById('content').innerHTML = `
+                document.getElementById('main-content').innerHTML = `
+                    <button class="back-btn" onclick="loadArticles()">← 返回列表</button>
                     <div class="article-view">
-                        <div class="article-header">
-                            <h1 class="article-title-main">${data.title}</h1>
-                            <div class="article-meta">
+                        <div class="article-view-header">
+                            <h1 class="article-view-title">${data.title}</h1>
+                            <div class="article-view-meta">
                                 <span>📅 ${data.created_at || '未知'}</span>
                                 ${data.category ? `<span>📁 ${data.category}</span>` : ''}
                                 ${data.tags ? `<span>🏷️ ${typeof data.tags === 'string' ? data.tags : data.tags.join(', ')}</span>` : ''}
                             </div>
                         </div>
-                        <div class="article-content">${markdownToHtml(content)}</div>
+                        <img src="${ghImage}" alt="${data.title}" class="article-view-image" onerror="this.style.display='none'">
+                        <div class="article-view-content">${markdownToHtml(data.content)}</div>
                     </div>
                 `;
             } catch (e) {
                 console.error('Show article error:', e);
-                document.getElementById('content').innerHTML = '<div class="loading">加载失败</div>';
+                document.getElementById('main-content').innerHTML = '<div class="loading">加载失败</div>';
             }
         }
 
@@ -1078,14 +1148,6 @@
                 .replace(/```([\s\S]*?)```/gim, '<pre><code>$1</code></pre>')
                 .replace(/`([^`]+)`/gim, '<code>$1</code>')
                 .replace(/\n/gim, '<br />');
-        }
-
-        // 搜索
-        function showSearch() {
-            const keyword = prompt('请输入搜索关键词:');
-            if (keyword) {
-                window.location.href = `/search?keyword=${encodeURIComponent(keyword)}`;
-            }
         }
 
         // RSS
@@ -1112,7 +1174,6 @@
             document.documentElement.setAttribute('data-theme', theme);
             localStorage.setItem('erudit-theme', theme);
             
-            // 更新按钮状态
             document.querySelectorAll('.theme-btn').forEach(btn => {
                 btn.classList.toggle('active', btn.dataset.theme === theme);
             });

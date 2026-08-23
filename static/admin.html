@@ -101,7 +101,7 @@
             height: 64px;
             display: flex;
             align-items: center;
-            justify-content: space-between;
+            justify-content: flex-start;
             position: sticky;
             top: 0;
             z-index: 100;
@@ -129,32 +129,6 @@
             text-shadow: var(--accent-glow);
         }
 
-        .navbar-nav {
-            display: flex;
-            gap: 8px;
-        }
-
-        .nav-btn {
-            padding: 8px 16px;
-            border: none;
-            border-radius: 8px;
-            background: transparent;
-            color: var(--text-secondary);
-            cursor: pointer;
-            font-size: 14px;
-            transition: all 0.2s;
-        }
-
-        .nav-btn:hover {
-            background: var(--hover-bg);
-            color: var(--accent-primary);
-        }
-
-        .nav-btn.primary {
-            background: var(--accent-gradient);
-            color: white;
-        }
-
         /* ========== 主体 ========== */
         .main {
             padding: 32px;
@@ -169,7 +143,35 @@
             color: var(--text-primary);
         }
 
-        /* ========== 表单 ========== */
+        /* ========== 统计面板 ========== */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        .stat-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 36px;
+            font-weight: 700;
+            color: var(--accent-primary);
+            margin-bottom: 8px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        /* ========== 卡片 ========== */
         .form-card {
             background: var(--bg-secondary);
             border: 1px solid var(--border-color);
@@ -184,6 +186,17 @@
             box-shadow: var(--shadow-md);
         }
 
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* ========== 表单 ========== */
         .form-group {
             margin-bottom: 20px;
         }
@@ -213,7 +226,7 @@
         }
 
         .form-textarea {
-            min-height: 400px;
+            min-height: 300px;
             font-family: 'Monaco', 'Consolas', monospace;
             font-size: 14px;
             line-height: 1.6;
@@ -236,10 +249,6 @@
             box-shadow: var(--accent-glow);
         }
 
-        .btn:active {
-            transform: translateY(0);
-        }
-
         .btn.secondary {
             background: var(--code-bg);
             color: var(--text-secondary);
@@ -256,6 +265,79 @@
 
         .btn.danger:hover {
             background: #dc2626;
+        }
+
+        /* ========== 分类管理 ========== */
+        .category-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .category-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .category-item:hover {
+            border-color: var(--accent-primary);
+        }
+
+        .category-info h4 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .category-info p {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .category-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .action-btn {
+            padding: 6px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+
+        .action-btn:hover {
+            background: var(--hover-bg);
+            color: var(--accent-primary);
+            border-color: var(--accent-primary);
+        }
+
+        .action-btn.danger:hover {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            border-color: #ef4444;
+        }
+
+        /* ========== 新建分类表单 ========== */
+        .category-form {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .category-form input {
+            flex: 1;
         }
 
         /* ========== 文章列表 ========== */
@@ -321,34 +403,6 @@
             background: rgba(239, 68, 68, 0.1);
             color: #ef4444;
             border-color: #ef4444;
-        }
-
-        /* ========== 统计面板 ========== */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 16px;
-            margin-bottom: 32px;
-        }
-
-        .stat-card {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 24px;
-            text-align: center;
-        }
-
-        .stat-number {
-            font-size: 36px;
-            font-weight: 700;
-            color: var(--accent-primary);
-            margin-bottom: 8px;
-        }
-
-        .stat-label {
-            font-size: 14px;
-            color: var(--text-muted);
         }
 
         /* ========== 标签 ========== */
@@ -492,6 +546,10 @@
                 align-items: flex-start;
                 gap: 12px;
             }
+
+            .category-form {
+                flex-direction: column;
+            }
         }
 
         /* ========== 滚动条 ========== */
@@ -518,10 +576,6 @@
     <!-- 页头 -->
     <header class="header">
         <div class="navbar-brand">⚙️ Erudit 后台</div>
-        <nav class="navbar-nav">
-            <a href="/" class="nav-btn">🏠 前台</a>
-            <a href="/docs" class="nav-btn">📖 API</a>
-        </nav>
     </header>
 
     <!-- 主体 -->
@@ -544,16 +598,39 @@
             </div>
         </div>
 
+        <!-- 分类管理 -->
+        <div class="form-card">
+            <h2 class="card-title">📁 分类管理</h2>
+            <div class="category-list" id="category-list">
+                <div style="padding: 20px; text-align: center; color: var(--text-muted);">加载中...</div>
+            </div>
+            <div class="category-form">
+                <input type="text" class="form-input" id="new-category-name" placeholder="分类名称">
+                <input type="text" class="form-input" id="new-category-desc" placeholder="描述（可选）">
+                <button class="btn" onclick="createCategory()">创建</button>
+            </div>
+        </div>
+
         <!-- 创建文章 -->
         <div class="form-card">
-            <h2 style="margin-bottom: 20px;">创建新文章</h2>
+            <h2 style="margin-bottom: 20px;">📝 创建新文章</h2>
             <div class="form-group">
                 <label class="form-label">标题</label>
                 <input type="text" class="form-input" id="article-title" placeholder="输入文章标题">
             </div>
             <div class="form-group">
+                <label class="form-label">分类</label>
+                <select class="form-select" id="article-category">
+                    <option value="">无分类</option>
+                </select>
+            </div>
+            <div class="form-group">
                 <label class="form-label">内容 (Markdown)</label>
                 <textarea class="form-textarea" id="article-content" placeholder="输入文章内容..."></textarea>
+            </div>
+            <div class="form-group">
+                <label class="form-label">标签（用逗号分隔）</label>
+                <input type="text" class="form-input" id="article-tags" placeholder="例如: docker, fastapi, 教程">
             </div>
             <div style="display: flex; gap: 12px;">
                 <button class="btn" onclick="createArticle()">发布文章</button>
@@ -564,7 +641,7 @@
         <!-- 文章列表 -->
         <div class="article-list">
             <div style="padding: 20px 24px; border-bottom: 1px solid var(--border-color);">
-                <h3>已有文章</h3>
+                <h3>📄 已有文章</h3>
             </div>
             <div id="article-list">
                 <div style="padding: 40px; text-align: center; color: var(--text-muted);">加载中...</div>
@@ -611,6 +688,7 @@
                 window.location.href = '/';
             } else {
                 loadStats();
+                loadCategories();
                 loadArticles();
             }
             loadTheme();
@@ -635,6 +713,94 @@
                 document.getElementById('stat-tags').textContent = data.tags || 0;
             } catch (e) {
                 console.error('加载统计失败:', e);
+            }
+        }
+
+        // 加载分类列表
+        async function loadCategories() {
+            try {
+                const res = await fetch('/categories');
+                const data = await res.json();
+                const list = document.getElementById('category-list');
+                const select = document.getElementById('article-category');
+                
+                if (data.categories && data.categories.length > 0) {
+                    list.innerHTML = data.categories.map(c => `
+                        <div class="category-item">
+                            <div class="category-info">
+                                <h4>${c.name}</h4>
+                                <p>${c.description || '无描述'}</p>
+                            </div>
+                            <div class="category-actions">
+                                <button class="action-btn danger" onclick="deleteCategory(${c.id})">删除</button>
+                            </div>
+                        </div>
+                    `).join('');
+                    
+                    // 更新下拉框
+                    select.innerHTML = '<option value="">无分类</option>' + 
+                        data.categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+                } else {
+                    list.innerHTML = '<div style="padding: 20px; text-align: center; color: var(--text-muted);">暂无分类</div>';
+                    select.innerHTML = '<option value="">无分类</option>';
+                }
+            } catch (e) {
+                document.getElementById('category-list').innerHTML = '<div style="padding: 20px; text-align: center; color: var(--text-muted);">加载失败</div>';
+            }
+        }
+
+        // 创建分类
+        async function createCategory() {
+            const name = document.getElementById('new-category-name').value.trim();
+            const desc = document.getElementById('new-category-desc').value.trim();
+            
+            if (!name) {
+                alert('请输入分类名称');
+                return;
+            }
+            
+            try {
+                const res = await fetch('/categories', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ name, description: desc })
+                });
+                
+                if (res.ok) {
+                    document.getElementById('new-category-name').value = '';
+                    document.getElementById('new-category-desc').value = '';
+                    loadCategories();
+                    loadStats();
+                    alert('分类创建成功！');
+                } else {
+                    alert('创建失败，请重试');
+                }
+            } catch (e) {
+                alert('创建失败: ' + e.message);
+            }
+        }
+
+        // 删除分类
+        async function deleteCategory(id) {
+            if (!confirm('确定要删除这个分类吗？该分类下的文章将变为无分类。')) return;
+            
+            try {
+                const res = await fetch(`/categories/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (res.ok) {
+                    loadCategories();
+                    loadStats();
+                } else {
+                    alert('删除失败');
+                }
+            } catch (e) {
+                alert('删除失败: ' + e.message);
             }
         }
 
@@ -672,6 +838,8 @@
         async function createArticle() {
             const title = document.getElementById('article-title').value.trim();
             const content = document.getElementById('article-content').value.trim();
+            const categoryId = document.getElementById('article-category').value;
+            const tags = document.getElementById('article-tags').value.trim();
             
             if (!title || !content) {
                 alert('请输入标题和内容');
@@ -679,13 +847,17 @@
             }
             
             try {
+                const body = { title, content };
+                if (categoryId) body.category_id = parseInt(categoryId);
+                if (tags) body.tags = tags.split(',').map(t => t.trim()).filter(t => t);
+                
                 const res = await fetch('/articles', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${token}`
                     },
-                    body: JSON.stringify({ title, content })
+                    body: JSON.stringify(body)
                 });
                 
                 if (res.ok) {
@@ -705,6 +877,8 @@
         function clearForm() {
             document.getElementById('article-title').value = '';
             document.getElementById('article-content').value = '';
+            document.getElementById('article-category').value = '';
+            document.getElementById('article-tags').value = '';
         }
 
         // 编辑文章
