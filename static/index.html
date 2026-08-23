@@ -713,11 +713,6 @@
             transition: all 0.3s;
         }
 
-        [data-theme="cyberpunk"] .footer {
-            background: linear-gradient(180deg, #12121a 0%, #0a0a0f 100%);
-            border-top: 1px solid var(--border-color);
-        }
-
         .footer-links {
             display: flex;
             justify-content: center;
@@ -728,7 +723,33 @@
         .footer-links a {
             color: var(--text-secondary);
             text-decoration: none;
-            transition: color 0.2s;
+            transition: color 0.3s;
+        }
+
+        .footer-links a:hover {
+            color: var(--accent-primary);
+        }
+
+        .footer-info {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .footer-divider {
+            color: var(--text-muted);
+        }
+
+        .footer-info a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .footer-info a:hover {
+            color: var(--accent-primary);
         }
 
         .footer-links a:hover {
@@ -802,10 +823,9 @@
     <!-- 页头 -->
     <header class="header">
         <div class="navbar-brand">📚 Erudit</div>
-        <nav class="navbar-nav">
-            <button class="nav-btn" onclick="showSearch()">🔍 搜索</button>
-            <button class="nav-btn" onclick="showRSS()">📡 RSS</button>
-            <a href="/docs" class="nav-btn">📖 API</a>
+        <nav class="navbar-nav" id="category-nav">
+            <button class="nav-btn active" onclick="filterCategory('all')">全部</button>
+            <button class="nav-btn" data-category-id="1" onclick="filterCategory(1)">开源项目</button>
         </nav>
     </header>
 
@@ -849,7 +869,13 @@
             <a href="/docs">API 文档</a>
             <a href="https://github.com/trencps/erudit" target="_blank">GitHub</a>
         </div>
-        <div>© 2026 Erudit - 个人知识管理系统</div>
+        <div class="footer-info">
+            <span>© 2026 Erudit v3.0.0 - 个人知识管理系统</span>
+            <span class="footer-divider">|</span>
+            <span>友情链接:</span>
+            <a href="https://hermes-studio.ai" target="_blank">Hermes Studio</a>
+            <a href="https://github.com/EKKOLearnAI" target="_blank">EKKOLearnAI</a>
+        </div>
     </footer>
 
     <!-- 右下角管理面板 -->
@@ -961,15 +987,20 @@
         }
 
         // 加载文章列表
-        async function loadArticles() {
+        async function loadArticles(categoryId = 'all') {
             try {
                 const res = await fetch('/articles');
                 const data = await res.json();
                 console.log('Articles response:', data);
                 const list = document.getElementById('article-list');
                 
-                if (data.articles && data.articles.length > 0) {
-                    list.innerHTML = data.articles.map(a => `
+                let articles = data.articles || [];
+                if (categoryId !== 'all') {
+                    articles = articles.filter(a => a.category_id === parseInt(categoryId));
+                }
+                
+                if (articles.length > 0) {
+                    list.innerHTML = articles.map(a => `
                         <div class="article-item" onclick="showArticle('${a.slug}')">
                             <div class="article-title">${a.title}</div>
                             <div class="article-meta">${a.created_at || '未知时间'}</div>
@@ -982,6 +1013,20 @@
                 console.error('Load articles error:', e);
                 document.getElementById('article-list').innerHTML = '<div class="loading">加载失败</div>';
             }
+        }
+
+        // 分类筛选
+        function filterCategory(categoryId) {
+            // 更新按钮状态
+            document.querySelectorAll('#category-nav .nav-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (categoryId === 'all' && btn.textContent === '全部') {
+                    btn.classList.add('active');
+                } else if (btn.dataset.categoryId === categoryId) {
+                    btn.classList.add('active');
+                }
+            });
+            loadArticles(categoryId);
         }
 
         // 显示文章
