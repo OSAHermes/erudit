@@ -1,8 +1,7 @@
 """
 管理 API 路由 - 需要认证
 """
-from fastapi import APIRouter, HTTPException, UploadFile, File, Form, Request, Depends, Response
-from datetime import datetime, timedelta
+from fastapi import APIRouter, HTTPException, UploadFile, File, Form, Request, Depends
 from fastapi.security import HTTPAuthorizationCredentials
 from pydantic import BaseModel
 from typing import List, Optional
@@ -12,13 +11,8 @@ from core.database import (
     create_category, delete_category
 )
 from core.backup import create_backup, download_backup, delete_backup, clean_old_backups
-from core.config import verify_password, get_db, ADMIN_PASSWORD_HASH, BACKUP_RETENTION_DAYS, UPLOAD_DIR
 import os
 import json
-import secrets
-import uuid
-import bcrypt
-import core.config
 
 router = APIRouter(prefix="/api", tags=["admin"])
 
@@ -52,6 +46,8 @@ class PasswordChange(BaseModel):
 @router.get("/auth/login")
 def login(request: Request, password: str = Form(None)):
     """登录获取 Token"""
+    from core.config import verify_password, get_db
+    import secrets
     
     # 支持 query parameter
     if password is None:
@@ -83,6 +79,8 @@ def change_password(
     user: dict = Depends(get_current_user)
 ):
     """修改密码"""
+    from core.config import verify_password, ADMIN_PASSWORD_HASH
+    import bcrypt
     
     if not verify_password(old_password):
         raise HTTPException(status_code=401, detail="旧密码错误")
@@ -95,6 +93,7 @@ def change_password(
     core.config.ADMIN_PASSWORD_HASH = bcrypt.hashpw(new_password.encode(), bcrypt.gensalt()).decode()
     
     # 清除所有旧 token
+    from core.config import get_db
     with get_db() as conn:
         conn.execute("DELETE FROM tokens")
     
@@ -164,12 +163,15 @@ def delete_backup_api(filename: str, user: dict = Depends(get_current_user)):
 @router.post("/backup/cleanup")
 def cleanup_backups_api(user: dict = Depends(get_current_user)):
     """清理旧备份"""
+    from core.config import BACKUP_RETENTION_DAYS
     return clean_old_backups(BACKUP_RETENTION_DAYS)
 
 
 @router.post("/uploads")
 def upload_file(file: UploadFile = File(...), user: dict = Depends(get_current_user)):
     """上传图片"""
+    from core.config import UPLOAD_DIR
+    import uuid
     
     file_ext = os.path.splitext(file.filename)[1]
     unique_filename = f"{uuid.uuid4().hex}{file_ext}"
@@ -185,3 +187,6 @@ def upload_file(file: UploadFile = File(...), user: dict = Depends(get_current_u
         "url": f"/api/uploads/{unique_filename}"
     }
 
+
+from fastapi import Response
+from datetime import datetime, timedelta

@@ -85,38 +85,6 @@ def clean_old_backups(retention_days: int = 7) -> dict:
     return {"message": f"清理了 {deleted} 个旧备份", "deleted": deleted}
 
 
-
-def restore_backup(filename: str, target_db_path: str = None) -> dict:
-    """从备份恢复数据库"""
-    import tarfile
-    import shutil
-    
-    backup_path = os.path.join(BACKUP_DIR, filename)
-    if not os.path.exists(backup_path):
-        return {"error": "备份文件不存在"}
-    
-    # 创建备份以防万一
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    emergency_backup = os.path.join(BACKUP_DIR, f"emergency_{timestamp}.tar.gz")
-    if os.path.exists(DB_PATH):
-        with tarfile.open(emergency_backup, "w:gz") as tar:
-            tar.add(DB_PATH, arcname="knowledge_base.db")
-    
-    # 恢复
-    try:
-        with tarfile.open(backup_path, "r:gz") as tar:
-            tar.extractall()
-        
-        restored_db = os.path.join(".", "knowledge_base.db")
-        if os.path.exists(restored_db):
-            target = target_db_path or DB_PATH
-            shutil.move(restored_db, target)
-            return {"message": f"恢复成功，目标: {target}", "emergency_backup": emergency_backup}
-        return {"error": "恢复失败: 未找到数据库文件"}
-    except Exception as e:
-        return {"error": f"恢复失败: {str(e)}"}
-
-
 def format_size(bytes_size: int) -> str:
     """格式化文件大小"""
     for unit in ["B", "KB", "MB", "GB"]:

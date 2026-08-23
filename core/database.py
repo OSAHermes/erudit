@@ -121,13 +121,11 @@ def delete_article(slug: str) -> dict:
 
 
 def search_articles(keyword: str) -> list:
-    """全文搜索（支持前缀匹配）"""
+    """全文搜索"""
     with get_db() as conn:
-        # 使用通配符进行前缀匹配
-        search_query = f"{keyword}*"
         rows = conn.execute(
             "SELECT * FROM articles_fts WHERE articles_fts MATCH ?",
-            (search_query,)
+            (keyword,)
         ).fetchall()
         # 获取完整文章信息
         results = []
