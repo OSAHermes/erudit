@@ -5,29 +5,271 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Erudit - 个人知识库</title>
     <style>
-        /* ========== 浅色主题 ========== */
+        /* ========== 梦幻浅色主题 ========== */
         :root[data-theme="light"] {
-            --bg-primary: #f0f2f5;
+            --bg-primary: #faf5ff;
             --bg-secondary: #ffffff;
-            --bg-sidebar: #ffffff;
-            --text-primary: #1a1a2e;
-            --text-secondary: #4a4a6a;
-            --text-muted: #8888aa;
-            --border-color: #e0e0e8;
-            --accent-primary: #667eea;
-            --accent-secondary: #764ba2;
-            --accent-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            --accent-glow: 0 4px 20px rgba(102, 126, 234, 0.3);
-            --hover-bg: rgba(102, 126, 234, 0.08);
-            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
-            --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.08);
-            --shadow-lg: 0 10px 40px rgba(0, 0, 0, 0.12);
-            --code-bg: #f5f5f7;
-            --tag-bg: rgba(102, 126, 234, 0.1);
-            --tag-text: #667eea;
+            --bg-sidebar: #f8f0ff;
+            --text-primary: #2d1b4e;
+            --text-secondary: #5a4575;
+            --text-muted: #9a85b5;
+            --border-color: #e8dff5;
+            --accent-primary: #a855f7;
+            --accent-secondary: #ec4899;
+            --accent-gradient: linear-gradient(135deg, #c084fc 0%, #a855f7 25%, #ec4899 50%, #f472b6 75%, #fb7185 100%);
+            --accent-glow: 0 0 20px rgba(168, 85, 247, 0.3);
+            --accent-glow-strong: 0 0 30px rgba(168, 85, 247, 0.5), 0 0 60px rgba(236, 72, 153, 0.3);
+            --hover-bg: rgba(168, 85, 247, 0.05);
+            --shadow-sm: 0 2px 12px rgba(168, 85, 247, 0.08);
+            --shadow-md: 0 4px 24px rgba(168, 85, 247, 0.12), 0 2px 8px rgba(236, 72, 153, 0.06);
+            --shadow-lg: 0 10px 40px rgba(168, 85, 247, 0.15), 0 4px 16px rgba(236, 72, 153, 0.08);
+            --code-bg: #f5f0ff;
+            --tag-bg: linear-gradient(135deg, rgba(168, 85, 247, 0.1), rgba(236, 72, 153, 0.1));
+            --tag-text: #9333ea;
+            --card-gradient: linear-gradient(135deg, rgba(192, 132, 252, 0.05) 0%, rgba(244, 114, 182, 0.05) 100%);
+            --blur-bg: blur(20px);
         }
 
-        /* ========== 深色主题 ========== */
+        [data-theme="light"] body {
+            background: linear-gradient(135deg, #faf5ff 0%, #fff0f5 50%, #f0f5ff 100%);
+            background-attachment: fixed;
+            position: relative;
+        }
+
+        [data-theme="light"] body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(ellipse at 20% 20%, rgba(192, 132, 252, 0.15) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 80%, rgba(236, 72, 153, 0.1) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 50%, rgba(251, 191, 36, 0.05) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        [data-theme="light"] .header {
+            background: linear-gradient(135deg, rgba(192, 132, 252, 0.15) 0%, rgba(236, 72, 153, 0.15) 100%);
+            backdrop-filter: var(--blur-bg);
+            -webkit-backdrop-filter: var(--blur-bg);
+            border-bottom: 1px solid rgba(168, 85, 247, 0.2);
+            box-shadow: var(--shadow-md);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        [data-theme="light"] .navbar-brand {
+            font-weight: 700;
+            background: linear-gradient(90deg, #a855f7, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            filter: drop-shadow(0 0 12px rgba(168, 85, 247, 0.4));
+        }
+
+        [data-theme="light"] .navbar-btn {
+            background: rgba(255, 255, 255, 0.6);
+            border: 1px solid rgba(168, 85, 247, 0.3);
+            color: #7c3aed;
+            backdrop-filter: var(--blur-bg);
+            -webkit-backdrop-filter: var(--blur-bg);
+            box-shadow: var(--shadow-sm);
+            transition: all 0.3s ease;
+        }
+
+        [data-theme="light"] .navbar-btn:hover {
+            background: rgba(255, 255, 255, 0.9);
+            border-color: #a855f7;
+            box-shadow: var(--accent-glow);
+            transform: translateY(-2px);
+        }
+
+        [data-theme="light"] .navbar-btn.primary {
+            background: linear-gradient(135deg, #a855f7, #ec4899);
+            color: white;
+            border: none;
+            font-weight: 600;
+            box-shadow: var(--accent-glow);
+        }
+
+        [data-theme="light"] .navbar-btn.primary:hover {
+            box-shadow: var(--accent-glow-strong);
+            transform: translateY(-2px);
+        }
+
+        [data-theme="light"] .sidebar {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: var(--blur-bg);
+            -webkit-backdrop-filter: var(--blur-bg);
+            border: 1px solid rgba(168, 85, 247, 0.15);
+            box-shadow: var(--shadow-md);
+        }
+
+        [data-theme="light"] .stat-item {
+            background: linear-gradient(135deg, rgba(192, 132, 252, 0.2) 0%, rgba(236, 72, 153, 0.2) 100%);
+            border: 1px solid rgba(168, 85, 247, 0.3);
+            box-shadow: var(--shadow-sm);
+            backdrop-filter: var(--blur-bg);
+            -webkit-backdrop-filter: var(--blur-bg);
+        }
+
+        [data-theme="light"] .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(90deg, #a855f7, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        [data-theme="light"] .stat-label {
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        [data-theme="light"] .article-item {
+            border: 1px solid rgba(168, 85, 247, 0.1);
+            background: rgba(255, 255, 255, 0.5);
+            backdrop-filter: var(--blur-bg);
+            -webkit-backdrop-filter: var(--blur-bg);
+            transition: all 0.3s ease;
+        }
+
+        [data-theme="light"] .article-item:hover {
+            border-color: rgba(168, 85, 247, 0.4);
+            background: rgba(255, 255, 255, 0.8);
+            box-shadow: var(--shadow-md);
+            transform: translateX(4px);
+        }
+
+        [data-theme="light"] .article-item.active {
+            background: linear-gradient(90deg, rgba(192, 132, 252, 0.15) 0%, rgba(236, 72, 153, 0.15) 100%);
+            border-color: #a855f7;
+            box-shadow: var(--accent-glow);
+        }
+
+        [data-theme="light"] .content-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: var(--blur-bg);
+            -webkit-backdrop-filter: var(--blur-bg);
+            border: 1px solid rgba(168, 85, 247, 0.15);
+            box-shadow: var(--shadow-lg);
+        }
+
+        [data-theme="light"] .form-input,
+        [data-theme="light"] .editor-input,
+        [data-theme="light"] .editor-select,
+        [data-theme="light"] .editor-textarea {
+            background: rgba(255, 255, 255, 0.6);
+            border: 1px solid rgba(168, 85, 247, 0.2);
+            color: var(--text-primary);
+            backdrop-filter: var(--blur-bg);
+            -webkit-backdrop-filter: var(--blur-bg);
+        }
+
+        [data-theme="light"] .form-input:focus,
+        [data-theme="light"] .editor-input:focus,
+        [data-theme="light"] .editor-select:focus,
+        [data-theme="light"] .editor-textarea:focus {
+            border-color: #a855f7;
+            box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.1), var(--accent-glow);
+            outline: none;
+            background: rgba(255, 255, 255, 0.9);
+        }
+
+        [data-theme="light"] .btn {
+            background: linear-gradient(135deg, #c084fc, #ec4899);
+            border: none;
+            color: white;
+            box-shadow: var(--shadow-sm);
+            transition: all 0.3s ease;
+        }
+
+        [data-theme="light"] .btn:hover {
+            box-shadow: var(--accent-glow-strong);
+            transform: translateY(-2px);
+        }
+
+        [data-theme="light"] .btn-danger {
+            background: linear-gradient(135deg, #f43f5e, #e11d48);
+        }
+
+        [data-theme="light"] .btn-danger:hover {
+            box-shadow: 0 0 25px rgba(244, 63, 94, 0.5);
+        }
+
+        [data-theme="light"] .tag {
+            background: var(--tag-bg);
+            color: var(--tag-text);
+            border: 1px solid rgba(168, 85, 247, 0.2);
+            font-size: 0.75rem;
+        }
+
+        [data-theme="light"] .login-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: var(--blur-bg);
+            -webkit-backdrop-filter: var(--blur-bg);
+            border: 1px solid rgba(168, 85, 247, 0.2);
+            box-shadow: var(--shadow-lg), var(--accent-glow);
+        }
+
+        [data-theme="light"] .theme-toggle {
+            background: rgba(168, 85, 247, 0.15);
+            border: 1px solid rgba(168, 85, 247, 0.3);
+        }
+
+        [data-theme="light"] .theme-toggle::before {
+            background: linear-gradient(135deg, #a855f7, #ec4899);
+            box-shadow: 0 0 10px rgba(168, 85, 247, 0.5);
+        }
+
+        [data-theme="light"] .footer {
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: var(--blur-bg);
+            -webkit-backdrop-filter: var(--blur-bg);
+            border-top: 1px solid rgba(168, 85, 247, 0.15);
+        }
+
+        [data-theme="light"] .empty-state-icon {
+            filter: drop-shadow(0 0 20px rgba(168, 85, 247, 0.4));
+            animation: float 4s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        [data-theme="light"] ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        [data-theme="light"] ::-webkit-scrollbar-track {
+            background: rgba(168, 85, 247, 0.05);
+        }
+
+        [data-theme="light"] ::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, #c084fc, #ec4899);
+            border-radius: 4px;
+        }
+
+        [data-theme="light"] ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(180deg, #a855f7, #db2777);
+        }
+
+        [data-theme="light"] ::selection {
+            background: rgba(168, 85, 247, 0.2);
+            color: #7c3aed;
+        }
+
+
         :root[data-theme="dark"] {
             --bg-primary: #0d1117;
             --bg-secondary: #161b22;
@@ -78,6 +320,488 @@
             box-sizing: border-box;
         }
 
+        [data-theme="cyberpunk"] .stat-number {
+            font-family: 'Courier New', monospace;
+            color: var(--accent-primary);
+            text-shadow: var(--accent-glow);
+        }
+
+        [data-theme="cyberpunk"] .article-item {
+            border-color: var(--border-color);
+        }
+
+        [data-theme="cyberpunk"] .article-item:hover,
+        [data-theme="cyberpunk"] .article-item.active {
+            border-color: var(--accent-primary);
+            background: var(--hover-bg);
+        }
+
+        [data-theme="cyberpunk"] .form-input,
+        [data-theme="cyberpunk"] .editor-input,
+        [data-theme="cyberpunk"] .editor-textarea {
+            background: var(--code-bg);
+            border-color: var(--border-color);
+            font-family: 'Courier New', monospace;
+        }
+
+        [data-theme="cyberpunk"] .form-input:focus,
+        [data-theme="cyberpunk"] .editor-input:focus,
+        [data-theme="cyberpunk"] .editor-textarea:focus {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.3);
+        }
+
+        [data-theme="cyberpunk"] .btn {
+            font-family: 'Courier New', monospace;
+            text-transform: uppercase;
+        }
+
+        [data-theme="cyberpunk"] .btn-primary {
+            background: transparent;
+            border: 1px solid var(--accent-primary);
+            color: var(--accent-primary);
+        }
+
+        [data-theme="cyberpunk"] .btn-primary:hover {
+            background: var(--accent-primary);
+            color: #0a0a0f;
+            box-shadow: var(--accent-glow-strong);
+        }
+
+        [data-theme="cyberpunk"] .login-card {
+            border: 1px solid var(--accent-primary);
+            box-shadow: var(--shadow-lg), var(--accent-glow);
+        }
+
+        [data-theme="cyberpunk"] .theme-toggle {
+            background: rgba(0, 240, 255, 0.2);
+            border: 1px solid var(--accent-primary);
+        }
+
+        [data-theme="cyberpunk"] .theme-toggle::before {
+            background: var(--accent-primary);
+            box-shadow: 0 0 10px var(--accent-primary);
+        }
+
+        [data-theme="cyberpunk"] ::-webkit-scrollbar-thumb {
+            background: var(--accent-primary);
+        }
+
+        
+        /* ========== 霓虹东京主题 ========== */
+        :root[data-theme="neontokyo"] {
+            --bg-primary: #0f0515;
+            --bg-secondary: #1a0a25;
+            --bg-sidebar: #150820;
+            --text-primary: #f0d0ff;
+            --text-secondary: #c8a0e0;
+            --text-muted: #6a4a8a;
+            --border-color: #2a1545;
+            --accent-primary: #ff6ec7;
+            --accent-secondary: #7b68ee;
+            --accent-gradient: linear-gradient(135deg, #ff6ec7 0%, #9d7fff 50%, #7b68ee 100%);
+            --accent-glow: 0 0 25px rgba(255, 110, 199, 0.6);
+            --accent-glow-strong: 0 0 40px rgba(255, 110, 199, 0.9), 0 0 80px rgba(123, 104, 238, 0.4);
+            --hover-bg: rgba(255, 110, 199, 0.1);
+            --shadow-sm: 0 2px 15px rgba(255, 110, 199, 0.2);
+            --shadow-md: 0 4px 25px rgba(123, 104, 238, 0.3), 0 0 20px rgba(255, 110, 199, 0.1);
+            --shadow-lg: 0 10px 50px rgba(0, 0, 0, 0.9), 0 0 40px rgba(255, 110, 199, 0.25);
+            --code-bg: #120818;
+            --tag-bg: rgba(255, 110, 199, 0.15);
+            --tag-text: #ff9ed9;
+            --pink-glow: 0 0 20px rgba(255, 110, 199, 0.5);
+            --purple-glow: 0 0 20px rgba(123, 104, 238, 0.5);
+        }
+
+        [data-theme="neontokyo"] body {
+            background: var(--bg-primary);
+            background-image: 
+                radial-gradient(ellipse at 20% 20%, rgba(255, 110, 199, 0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 80%, rgba(123, 104, 238, 0.08) 0%, transparent 50%),
+                repeating-linear-gradient(
+                    90deg,
+                    transparent,
+                    transparent 50px,
+                    rgba(255, 110, 199, 0.02) 50px,
+                    rgba(255, 110, 199, 0.02) 51px
+                );
+        }
+
+        [data-theme="neontokyo"] .header {
+            background: linear-gradient(180deg, #150820 0%, #1a0a25 100%);
+            border-bottom: 2px solid transparent;
+            border-image: linear-gradient(90deg, #ff6ec7, #7b68ee) 1;
+            box-shadow: 0 5px 30px rgba(255, 110, 199, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            position: relative;
+        }
+
+        [data-theme="neontokyo"] .header::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #ff6ec7, #7b68ee, #ff6ec7, transparent);
+            animation: neonFlow 4s linear infinite;
+        }
+
+        [data-theme="neontokyo"] .navbar-brand {
+            font-family: 'Segoe UI', sans-serif;
+            font-weight: 700;
+            letter-spacing: 2px;
+            background: linear-gradient(90deg, #ff6ec7, #ffd700, #7b68ee);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            filter: drop-shadow(0 0 10px rgba(255, 110, 199, 0.5));
+        }
+
+        [data-theme="neontokyo"] .navbar-btn {
+            background: rgba(255, 110, 199, 0.08);
+            border: 1px solid rgba(255, 110, 199, 0.4);
+            color: #ff9ed9;
+            font-weight: 500;
+            box-shadow: var(--shadow-sm);
+            position: relative;
+            overflow: hidden;
+        }
+
+        [data-theme="neontokyo"] .navbar-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.6s;
+        }
+
+        [data-theme="neontokyo"] .navbar-btn:hover::before {
+            left: 100%;
+        }
+
+        [data-theme="neontokyo"] .navbar-btn:hover {
+            background: rgba(255, 110, 199, 0.2);
+            border-color: #ff6ec7;
+            box-shadow: var(--accent-glow);
+            color: #fff;
+        }
+
+        [data-theme="neontokyo"] .navbar-btn.primary {
+            background: linear-gradient(135deg, #ff6ec7, #9d7fff);
+            color: #fff;
+            border: none;
+            font-weight: 600;
+            box-shadow: var(--purple-glow);
+        }
+
+        [data-theme="neontokyo"] .navbar-btn.primary:hover {
+            box-shadow: var(--accent-glow-strong);
+            transform: translateY(-2px);
+        }
+
+        [data-theme="neontokyo"] .sidebar {
+            background: linear-gradient(180deg, #150820 0%, #1a0a25 100%);
+            border: 1px solid var(--border-color);
+            border-left: 3px solid #ff6ec7;
+            box-shadow: var(--shadow-md);
+            position: relative;
+        }
+
+        [data-theme="neontokyo"] .sidebar::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, #ff6ec7, #7b68ee, #ff6ec7);
+        }
+
+        [data-theme="neontokyo"] .stat-item {
+            background: linear-gradient(135deg, 
+                rgba(255, 110, 199, 0.15) 0%, 
+                rgba(26, 10, 37, 0.95) 50%,
+                rgba(123, 104, 238, 0.15) 100%
+            );
+            border: 1px solid rgba(255, 110, 199, 0.4);
+            box-shadow: var(--shadow-sm), inset 0 0 30px rgba(255, 110, 199, 0.05);
+            position: relative;
+            overflow: hidden;
+        }
+
+        [data-theme="neontokyo"] .stat-item::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: conic-gradient(
+                from 0deg,
+                transparent,
+                rgba(255, 110, 199, 0.1),
+                transparent,
+                rgba(123, 104, 238, 0.1),
+                transparent
+            );
+            animation: hologramSpin 6s linear infinite;
+        }
+
+        [data-theme="neontokyo"] .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(90deg, #ff6ec7, #ffd700);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            filter: drop-shadow(0 0 8px rgba(255, 110, 199, 0.6));
+            position: relative;
+            z-index: 1;
+        }
+
+        [data-theme="neontokyo"] .stat-label {
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-size: 0.7rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        [data-theme="neontokyo"] .article-item {
+            border: 1px solid var(--border-color);
+            background: linear-gradient(90deg, 
+                rgba(255, 110, 199, 0.05) 0%,
+                transparent 40%
+            );
+            position: relative;
+            transition: all 0.3s;
+        }
+
+        [data-theme="neontokyo"] .article-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 3px;
+            background: linear-gradient(180deg, #ff6ec7, #7b68ee);
+            opacity: 0.4;
+            transition: opacity 0.3s;
+        }
+
+        [data-theme="neontokyo"] .article-item:hover::before {
+            opacity: 1;
+            box-shadow: var(--pink-glow);
+        }
+
+        [data-theme="neontokyo"] .article-item:hover {
+            border-color: rgba(255, 110, 199, 0.5);
+            background: var(--hover-bg);
+            box-shadow: var(--shadow-sm);
+        }
+
+        [data-theme="neontokyo"] .article-item.active {
+            background: linear-gradient(90deg, 
+                rgba(255, 110, 199, 0.2) 0%,
+                rgba(26, 10, 37, 0.95) 100%
+            );
+            border-color: #ff6ec7;
+            box-shadow: var(--accent-glow);
+        }
+
+        [data-theme="neontokyo"] .content-panel {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-lg);
+            position: relative;
+        }
+
+        [data-theme="neontokyo"] .content-panel::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, transparent 50%, rgba(255, 110, 199, 0.1) 50%);
+            pointer-events: none;
+        }
+
+        [data-theme="neontokyo"] .form-input,
+        [data-theme="neontokyo"] .editor-input,
+        [data-theme="neontokyo"] .editor-select,
+        [data-theme="neontokyo"] .editor-textarea {
+            background: var(--code-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+
+        [data-theme="neontokyo"] .form-input:focus,
+        [data-theme="neontokyo"] .editor-input:focus,
+        [data-theme="neontokyo"] .editor-select:focus,
+        [data-theme="neontokyo"] .editor-textarea:focus {
+            border-color: #ff6ec7;
+            box-shadow: 
+                inset 0 0 20px rgba(0, 0, 0, 0.5),
+                0 0 20px rgba(255, 110, 199, 0.3),
+                0 0 40px rgba(123, 104, 238, 0.15);
+            outline: none;
+        }
+
+        [data-theme="neontokyo"] .btn {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+
+        [data-theme="neontokyo"] .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        [data-theme="neontokyo"] .btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        [data-theme="neontokyo"] .btn-primary {
+            background: linear-gradient(135deg, #ff6ec7, #9d7fff);
+            border: none;
+            color: #fff;
+            box-shadow: var(--shadow-sm);
+        }
+
+        [data-theme="neontokyo"] .btn-primary:hover {
+            box-shadow: var(--accent-glow-strong);
+            transform: translateY(-2px);
+        }
+
+        [data-theme="neontokyo"] .btn-danger {
+            background: linear-gradient(135deg, #ff4757, #ff6b81);
+            border: none;
+            color: #fff;
+        }
+
+        [data-theme="neontokyo"] .btn-danger:hover {
+            box-shadow: 0 0 25px rgba(255, 71, 87, 0.6);
+        }
+
+        [data-theme="neontokyo"] .tag {
+            background: var(--tag-bg);
+            color: var(--tag-text);
+            border: 1px solid rgba(255, 110, 199, 0.3);
+            font-size: 0.75rem;
+            box-shadow: 0 0 10px rgba(255, 110, 199, 0.2);
+        }
+
+        [data-theme="neontokyo"] .login-card {
+            background: linear-gradient(135deg, #1a0a25, #251035);
+            border: 1px solid rgba(255, 110, 199, 0.4);
+            box-shadow: var(--shadow-lg), var(--accent-glow);
+            position: relative;
+        }
+
+        [data-theme="neontokyo"] .login-card::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, #ff6ec7, transparent, #7b68ee, transparent);
+            z-index: -1;
+            animation: borderRotate 4s linear infinite;
+        }
+
+        [data-theme="neontokyo"] .theme-toggle {
+            background: rgba(255, 110, 199, 0.15);
+            border: 1px solid rgba(255, 110, 199, 0.5);
+        }
+
+        [data-theme="neontokyo"] .theme-toggle::before {
+            background: linear-gradient(135deg, #ff6ec7, #7b68ee);
+            box-shadow: 0 0 15px rgba(255, 110, 199, 0.8);
+        }
+
+        [data-theme="neontokyo"] .footer {
+            background: linear-gradient(180deg, #150820, #0f0515);
+            border-top: 1px solid rgba(255, 110, 199, 0.3);
+        }
+
+        [data-theme="neontokyo"] .footer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #ff6ec7, #7b68ee, transparent);
+        }
+
+        [data-theme="neontokyo"] .empty-state-icon {
+            filter: drop-shadow(0 0 25px rgba(255, 110, 199, 0.7));
+            animation: float 3s ease-in-out infinite;
+        }
+
+        [data-theme="neontokyo"] ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        [data-theme="neontokyo"] ::-webkit-scrollbar-track {
+            background: var(--bg-primary);
+        }
+
+        [data-theme="neontokyo"] ::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, #ff6ec7, #7b68ee);
+            border-radius: 4px;
+        }
+
+        [data-theme="neontokyo"] ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(180deg, #ff9ed9, #9d7fff);
+        }
+
+        [data-theme="neontokyo"] ::selection {
+            background: rgba(255, 110, 199, 0.3);
+            color: #fff;
+        }
+
+        @keyframes neonFlow {
+            0% { filter: hue-rotate(0deg); }
+            100% { filter: hue-rotate(60deg); }
+        }
+
+        @keyframes hologramSpin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes borderRotate {
+            0% { filter: hue-rotate(0deg); }
+            100% { filter: hue-rotate(360deg); }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-12px); }
+        }
+
+
+        /* ========== 基础样式 ========== */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
             background: var(--bg-primary);
@@ -822,10 +1546,22 @@
 <body>
     <!-- 页头 -->
     <header class="header">
-        <div class="navbar-brand">📚 Erudit</div>
-        <nav class="navbar-nav" id="category-nav">
-            <button class="nav-btn active" onclick="filterCategory('all')">全部</button>
-            <button class="nav-btn" data-category-id="1" onclick="filterCategory(1)">开源项目</button>
+        <nav class="navbar">
+            <a href="/" class="navbar-brand">📚 Erudit</a>
+            <div class="menu-toggle" onclick="toggleMenu()">
+                <span></span><span></span><span></span>
+            </div>
+            <div class="navbar-menu" id="navMenu">
+                <button class="navbar-btn" onclick="showSearch()">🔍 搜索</button>
+                <button class="navbar-btn" onclick="showRSS()">📡 RSS</button>
+                <div class="navbar-btn" onclick="toggleTheme()" title="切换主题">
+                    <span id="themeLabel">CYBER</span>
+                    <span class="theme-icon">☀️</span>
+                    <button class="theme-toggle"></button>
+                    <span class="theme-icon">🌙</span>
+                </div>
+                <button class="navbar-btn primary" onclick="location.href='/admin'">⚙️ 管理后台</button>
+            </div>
         </nav>
     </header>
 
@@ -833,16 +1569,6 @@
     <div class="main">
         <!-- 侧边栏 -->
         <aside class="sidebar">
-            <!-- 统计面板 -->
-            <div class="stats-panel">
-                <div class="stat-item">
-                    <span class="stat-label">文章数</span>
-                    <span class="stat-number" id="stat-articles">0</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">分类数</span>
-                    <span class="stat-number" id="stat-categories">0</span>
-                </div>
                 <div class="stat-item">
                     <span class="stat-label">标签数</span>
                     <span class="stat-number" id="stat-tags">0</span>
@@ -956,9 +1682,44 @@
         let currentArticle = null;
         let token = null;
 
-        // 初始化
-        document.addEventListener('DOMContentLoaded', () => {
-            loadStats();
+        function toggleMenu() {
+            document.getElementById('navMenu').classList.toggle('active');
+        }
+
+        // 主题切换
+        function toggleTheme() {
+            const html = document.documentElement;
+            const current = html.getAttribute('data-theme');
+            const themes = ["light", "dark", "cyberpunk", "neontokyo"];
+            const idx = themes.indexOf(current);
+            const next = themes[(idx + 1) % themes.length];
+            html.setAttribute('data-theme', next);
+            localStorage.setItem('erudit_theme', next);
+            const label = document.getElementById('themeLabel');
+            if (label) label.textContent = next.toUpperCase();
+        }
+
+        // 初始化主题
+        (function initTheme() {
+            const saved = localStorage.getItem('erudit_theme') || 'light';
+            document.documentElement.setAttribute('data-theme', saved);
+        })();
+
+        async function login() {
+            const password = document.getElementById('password').value;
+            if (!password) { alert('请输入密码'); return; }
+            const resp = await fetch('/api/auth/login?password=' + encodeURIComponent(password));
+            const data = await resp.json();
+            if (data.token) {
+                token = data.token;
+                localStorage.setItem('erudit_token', token);
+                showMain();
+            } else { alert(data.detail || '密码错误'); }
+        }
+
+        function showMain() {
+            document.getElementById('loginSection').classList.add('hidden');
+            document.getElementById('mainSection').classList.remove('hidden');
             loadArticles();
             loadTheme();
             
