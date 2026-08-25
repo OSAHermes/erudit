@@ -3,7 +3,7 @@
 """
 from fastapi import APIRouter, HTTPException, Query, Request
 from fastapi.responses import HTMLResponse, Response
-from core.database import get_articles, get_article, search_articles, get_categories, get_stats
+from core.database import get_articles, get_article, search_articles, get_categories, get_stats, get_tags
 from core.backup import get_backups
 import json
 import os
@@ -72,7 +72,6 @@ def list_categories():
 @router.get("/tags")
 def list_tags():
     """获取标签列表"""
-    from core.database import get_tags
     return get_tags()
 
 

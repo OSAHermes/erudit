@@ -2,6 +2,7 @@
 管理 API 路由 - 需要认证
 """
 from fastapi import APIRouter, HTTPException, UploadFile, File, Form, Request, Depends
+from datetime import datetime, timedelta
 from fastapi.security import HTTPAuthorizationCredentials
 from pydantic import BaseModel
 from typing import List, Optional
@@ -93,7 +94,6 @@ def change_password(
     core.config.ADMIN_PASSWORD_HASH = bcrypt.hashpw(new_password.encode(), bcrypt.gensalt()).decode()
     
     # 清除所有旧 token
-    from core.config import get_db
     with get_db() as conn:
         conn.execute("DELETE FROM tokens")
     
@@ -184,6 +184,3 @@ def upload_file(file: UploadFile = File(...), user: dict = Depends(get_current_u
         "url": f"/api/uploads/{unique_filename}"
     }
 
-
-from fastapi import Response
-from datetime import datetime, timedelta
